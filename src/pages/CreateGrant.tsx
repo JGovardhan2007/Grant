@@ -58,12 +58,51 @@ export default function CreateGrant() {
       const params = await algodClient.getTransactionParams().do();
 
       // Convert INR to microALGO (1 INR = 1000 microALGO for testnet demo)
-      // Add 100,000 microALGO (0.1 ALGO) Minimum Balance Requirement (MBR)
-      // 100k account + 100k opt-in + (28500 * ints) + (50000 * byte-slices + length)
-      // We will fund 300,000 microALGO (0.3 ALGO) as a safe MBR buffer for the contract's new memory
       const MIN_BALANCE_REQ = 300_000n;
       const grantAmount = BigInt(Math.round(Number(totalAmount) * 1000));
       const microAlgo = grantAmount + MIN_BALANCE_REQ;
+
+      // ── PRE-FLIGHT CHECK 1: Wallet balance ─────────────────────────────────
+      const accountInfo = await algodClient.accountInformation(address as string).do();
+      const walletBalance = BigInt(accountInfo.amount);
+      const txFees = 2000n; // two transactions
+      const needed = microAlgo + txFees;
+      if (walletBalance < needed) {
+        const shortfall = ((needed - walletBalance) / 1_000_000n * 10n + 9n) / 10n; // ceil to 0.1 ALGO
+        alert(
+          `❌ Insufficient ALGO balance!\n\n` +
+          `Your wallet: ${Number(walletBalance) / 1_000_000} ALGO\n` +
+          `Required:    ${Number(needed) / 1_000_000} ALGO\n\n` +
+          `Please top up your wallet with at least ${shortfall} more ALGO from:\n` +
+          `https://bank.testnet.algorand.network`
+        );
+        setLoading(false);
+        return;
+      }
+
+      // ── PRE-FLIGHT CHECK 2: Contract not already initialized ─────────────
+      try {
+        const appInfo = await algodClient.getApplicationByID(CHAIN_GRANT_APP_ID).do();
+        const globalState = appInfo.params.globalState || [];
+        const initializedVar = globalState.find((kv: any) => {
+          const key = atob(kv.key);
+          return key === 'initialized';
+        });
+        if (initializedVar?.value?.uint === BigInt(1)) {
+          alert(
+            `⚠️ Contract already has an active grant!\n\n` +
+            `The smart contract escrow already holds locked funds from a previous grant.\n` +
+            `Please close/complete that grant before creating a new one.\n\n` +
+            `(This is a testnet demo limitation — one active grant at a time.)`
+          );
+          setLoading(false);
+          return;
+        }
+      } catch (e) {
+        // If we can't read app state, proceed anyway (non-blocking)
+        console.warn('Could not read contract state — proceeding', e);
+      }
+
 
       const methodSelector = algosdk.ABIMethod.fromSignature('initialize_grant(address,pay)void').getSelector();
       const encodedStudentAddr = algosdk.ABIAddressType.from('address').encode(studentAddress);
