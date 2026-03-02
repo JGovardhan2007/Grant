@@ -80,7 +80,7 @@ async function main() {
         onComplete: algosdk.OnApplicationComplete.NoOpOC,
         approvalProgram,
         clearProgram,
-        numGlobalByteSlices: 2,   // sponsor (address), student (address)
+        numGlobalByteSlices: 3,   // sponsor (address), student (address), latest_proof_hash (string)
         numGlobalInts: 3,         // total_locked, released, initialized
         numLocalByteSlices: 0,
         numLocalInts: 0,
