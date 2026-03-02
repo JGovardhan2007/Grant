@@ -138,7 +138,7 @@ export default function MilestoneTracker() {
 
       const txn = algosdk.makeApplicationCallTxnFromObject({
         sender: address,
-        suggestedParams: params,
+        suggestedParams: { ...params, fee: 2000, flatFee: true },
         appIndex: CHAIN_GRANT_APP_ID,
         onComplete: algosdk.OnApplicationComplete.NoOpOC,
         appArgs: [methodSelector, amountArg],

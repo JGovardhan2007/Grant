@@ -96,7 +96,7 @@ class ChainGrant(ARC4Contract):
         itxn.Payment(
             receiver=self.student.value,
             amount=release_amount,
-            fee=Global.min_txn_fee,
+            fee=0,
         ).submit()
 
         self.released.value = self.released.value + release_amount
@@ -130,7 +130,7 @@ class ChainGrant(ARC4Contract):
             itxn.Payment(
                 receiver=self.sponsor.value,
                 amount=remaining,
-                fee=Global.min_txn_fee,
+                fee=0,
             ).submit()
 
         self.initialized.value = UInt64(0)

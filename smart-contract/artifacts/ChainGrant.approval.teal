@@ -167,31 +167,31 @@ release_funds:
     // itxn.Payment(
     //     receiver=self.student.value,
     //     amount=release_amount,
-    //     fee=Global.min_txn_fee,
+    //     fee=0,
     // ).submit()
     itxn_begin
-    // contract.py:99
-    // fee=Global.min_txn_fee,
-    global MinTxnFee
     // contract.py:97
     // receiver=self.student.value,
     intc_0 // 0
     bytec 4 // "student"
     app_global_get_ex
     assert // check self.student exists
-    dig 3
+    dig 2
     itxn_field Amount
     itxn_field Receiver
     // contract.py:96
     // itxn.Payment(
     intc_1 // pay
     itxn_field TypeEnum
+    // contract.py:99
+    // fee=0,
+    intc_0 // 0
     itxn_field Fee
     // contract.py:96-100
     // itxn.Payment(
     //     receiver=self.student.value,
     //     amount=release_amount,
-    //     fee=Global.min_txn_fee,
+    //     fee=0,
     // ).submit()
     itxn_submit
     // contract.py:102
@@ -283,31 +283,31 @@ close_grant:
     // itxn.Payment(
     //     receiver=self.sponsor.value,
     //     amount=remaining,
-    //     fee=Global.min_txn_fee,
+    //     fee=0,
     // ).submit()
     itxn_begin
-    // contract.py:133
-    // fee=Global.min_txn_fee,
-    global MinTxnFee
     // contract.py:131
     // receiver=self.sponsor.value,
     intc_0 // 0
     bytec_1 // "sponsor"
     app_global_get_ex
     assert // check self.sponsor exists
-    dig 2
+    dig 1
     itxn_field Amount
     itxn_field Receiver
     // contract.py:130
     // itxn.Payment(
     intc_1 // pay
     itxn_field TypeEnum
+    // contract.py:133
+    // fee=0,
+    intc_0 // 0
     itxn_field Fee
     // contract.py:130-134
     // itxn.Payment(
     //     receiver=self.sponsor.value,
     //     amount=remaining,
-    //     fee=Global.min_txn_fee,
+    //     fee=0,
     // ).submit()
     itxn_submit
 
