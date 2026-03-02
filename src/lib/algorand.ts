@@ -93,8 +93,8 @@ export const createGrantContract = async (
     approvalProgram: getProgramBytes(APPROVAL_PROGRAM_B64),
     clearProgram: getProgramBytes(CLEAR_PROGRAM_B64),
     // Extracted exactly from ARC-56 JSON / contract.py GlobalState counts
-    numGlobalByteSlices: 1, // latest_proof_hash (String)
-    numGlobalInts: 5,       // sponsor(bytes->int? wait, Account is 32bytes so it's byteslice? Actually wait... let's allocate max standard for safety)
+    numGlobalByteSlices: 3, // sponsor (account), student (account), latest_proof_hash (String)
+    numGlobalInts: 3,       // total_locked, released, initialized
     appArgs: [],
     note: note ? new TextEncoder().encode(note) : undefined,
   });
