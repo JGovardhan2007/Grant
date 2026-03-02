@@ -128,16 +128,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * No email input needed — the wallet IS the identity.
    */
   const loginWithWallet = async () => {
-    // Reuse existing Pera session if available, otherwise open connect modal
-    let accounts: string[] = [];
-    try {
-      accounts = await peraWallet.reconnectSession();
-    } catch (e) {
-      // No existing session — open the QR/connect modal
-    }
-    if (accounts.length === 0) {
-      accounts = await peraWallet.connect();
-    }
+    // Always disconnect first to clear any stale session.
+    // This ensures the account Pera connects with === the address we store in state.
+    try { await peraWallet.disconnect(); } catch (e) { /* ignore if no session */ }
+
+    const accounts = await peraWallet.connect();
     if (accounts.length === 0) throw new Error('No wallet accounts found');
 
     const addr = accounts[0];
