@@ -10,10 +10,10 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export default function Sidebar() {
-  const { role, user } = useAuth();
+  const { role, user, address } = useAuth();
   const location = useLocation();
 
-  if (location.pathname === '/' || !user) return null;
+  if (location.pathname === '/' || (!user && !address)) return null;
 
   const links = [
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['Sponsor', 'Student'] },
