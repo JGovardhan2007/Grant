@@ -29,23 +29,34 @@ const COLORS = [
 const ICONS = ['🏆', '💎', '🚀', '🛡️', '⚡', '🌟', '🔥', '💻'];
 
 export default function NFTBadges() {
-  const { address, signTransaction, role } = useAuth();
+  const { address, email, signTransaction } = useAuth();
   const [badges, setBadges] = useState<MintedBadge[]>([]);
   const [loadingBadges, setLoadingBadges] = useState(true);
   const [minting, setMinting] = useState<string | null>(null);
 
-  // Load completed milestones from Firestore and build badge list
+  // Load completed milestones — query by both wallet address AND email
   useEffect(() => {
     const loadBadges = async () => {
-      if (!address) { setLoadingBadges(false); return; }
+      if (!address && !email) { setLoadingBadges(false); return; }
 
       try {
-        // Fetch grants where this address is the student
-        const q = query(collection(db, 'grants'), where('studentAddress', '==', address));
-        const snapshot = await getDocs(q);
+        const grantsRef = collection(db, 'grants');
+
+        // Run both queries in parallel: one by wallet address, one by email
+        const [snapByAddr, snapByEmail] = await Promise.all([
+          address ? getDocs(query(grantsRef, where('studentAddress', '==', address))) : Promise.resolve(null),
+          email ? getDocs(query(grantsRef, where('studentEmail', '==', email))) : Promise.resolve(null),
+        ]);
+
+        // Merge, deduplicate by grant ID
+        const seen = new Set<string>();
+        const allDocs: any[] = [];
+        for (const snap of [snapByAddr, snapByEmail]) {
+          snap?.forEach(d => { if (!seen.has(d.id)) { seen.add(d.id); allDocs.push(d); } });
+        }
 
         const earnedBadges: MintedBadge[] = [];
-        snapshot.forEach((docSnap) => {
+        allDocs.forEach((docSnap) => {
           const grant = docSnap.data();
           const milestones = grant.milestones || [];
           milestones.forEach((m: any, idx: number) => {
@@ -73,7 +84,8 @@ export default function NFTBadges() {
     };
 
     loadBadges();
-  }, [address]);
+
+  }, [address, email]);
 
   const handleMint = async (badge: MintedBadge, idx: number) => {
     if (!address) {
