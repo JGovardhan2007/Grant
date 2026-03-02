@@ -30,6 +30,11 @@ export default function MilestoneTracker() {
   const [selectedMilestoneId, setSelectedMilestoneId] = useState<string | null>(null);
   const [proofDescription, setProofDescription] = useState('');
 
+  // Reject Modal State
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectMilestoneId, setRejectMilestoneId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+
   useEffect(() => {
     if (!id) return;
     const unsubscribe = onSnapshot(doc(db, 'grants', id), (docSnap) => {
@@ -78,6 +83,38 @@ export default function MilestoneTracker() {
       alert(`Submission failed: ${err.message}`);
     } finally {
       setUploading(null);
+    }
+  };
+
+  const handleRequestChanges = async () => {
+    if (!grant || !rejectMilestoneId || !rejectReason.trim()) {
+      alert('Please provide a reason for requesting changes.');
+      return;
+    }
+
+    setShowRejectModal(false);
+
+    try {
+      const updatedMilestones = grant.milestones.map((m: any) =>
+        m.id === rejectMilestoneId
+          ? {
+            ...m,
+            status: 'Changes Requested',
+            feedback: rejectReason
+          }
+          : m
+      );
+
+      await updateDoc(doc(db, 'grants', grant.id), {
+        milestones: updatedMilestones
+      });
+
+      alert('Feedback sent to student.');
+      setRejectReason('');
+      setRejectMilestoneId(null);
+    } catch (err: any) {
+      console.error('Failed to send feedback:', err);
+      alert('Failed to send feedback. Try again.');
     }
   };
 
@@ -237,8 +274,18 @@ export default function MilestoneTracker() {
                     </div>
                   )}
 
+                  {/* Feedback Display */}
+                  {milestone.feedback && (milestone.status === 'Changes Requested' || milestone.status === 'Pending Approval') && (
+                    <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-4 mb-4">
+                      <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-2 flex items-center gap-1">
+                        Sponsor Feedback
+                      </p>
+                      <p className="text-sm font-medium text-amber-900 whitespace-pre-wrap">{milestone.feedback}</p>
+                    </div>
+                  )}
+
                   <div className="flex justify-end items-center gap-4">
-                    {role === 'Student' && milestone.status === 'Not Started' && (
+                    {role === 'Student' && (milestone.status === 'Not Started' || milestone.status === 'Changes Requested') && (
                       <button
                         onClick={() => {
                           setSelectedMilestoneId(milestone.id);
@@ -266,18 +313,29 @@ export default function MilestoneTracker() {
                     )}
 
                     {role === 'Sponsor' && milestone.status === 'Pending Approval' && (
-                      <button
-                        onClick={() => handleReleaseFunds(milestone)}
-                        disabled={releasing === milestone.id}
-                        className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-2xl font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50"
-                      >
-                        {releasing === milestone.id ? (
-                          <Loader2 className="animate-spin" size={18} />
-                        ) : (
-                          <CheckCircle2 size={18} />
-                        )}
-                        {releasing === milestone.id ? 'Releasing...' : `Approve & Pay (₹${milestone.amount.toLocaleString()})`}
-                      </button>
+                      <>
+                        <button
+                          onClick={() => {
+                            setRejectMilestoneId(milestone.id);
+                            setShowRejectModal(true);
+                          }}
+                          className="px-6 py-3 bg-white text-rose-600 border-2 border-rose-100 rounded-2xl font-bold hover:bg-rose-50 hover:border-rose-200 transition-all active:scale-95"
+                        >
+                          Request Changes
+                        </button>
+                        <button
+                          onClick={() => handleReleaseFunds(milestone)}
+                          disabled={releasing === milestone.id}
+                          className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-2xl font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50"
+                        >
+                          {releasing === milestone.id ? (
+                            <Loader2 className="animate-spin" size={18} />
+                          ) : (
+                            <CheckCircle2 size={18} />
+                          )}
+                          {releasing === milestone.id ? 'Releasing...' : `Approve & Pay (₹${milestone.amount.toLocaleString()})`}
+                        </button>
+                      </>
                     )}
 
                     {milestone.released && (
@@ -364,6 +422,53 @@ export default function MilestoneTracker() {
                 >
                   <ShieldCheck size={18} />
                   Anchor On-Chain
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Reject/Request Changes Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-rose-900/10 backdrop-blur-md animate-in fade-in duration-300">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl p-10 border border-rose-100"
+          >
+            <h3 className="text-2xl font-black text-rose-900 mb-2">Request Changes</h3>
+            <p className="text-gray-500 text-sm font-medium mb-8">Let the student know what needs to be fixed before you can approve this milestone.</p>
+
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Feedback / Required Changes</label>
+                <textarea
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="e.g. Please include the link to the deployed application..."
+                  rows={4}
+                  className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-rose-500 transition-all font-bold text-rose-900 resize-none"
+                  required
+                ></textarea>
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <button
+                  onClick={() => {
+                    setShowRejectModal(false);
+                    setRejectReason('');
+                    setRejectMilestoneId(null);
+                  }}
+                  className="flex-1 py-4 px-6 bg-gray-50 text-gray-400 rounded-2xl font-bold hover:bg-gray-100 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleRequestChanges}
+                  className="flex-1 py-4 px-6 bg-rose-600 text-white rounded-2xl font-black shadow-lg shadow-rose-100 hover:bg-rose-700 transition-all"
+                >
+                  Send Feedback
                 </button>
               </div>
             </div>
