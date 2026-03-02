@@ -11,7 +11,7 @@ import algosdk from 'algosdk';
 
 export default function CreateGrant() {
   const navigate = useNavigate();
-  const { address, signTransaction, user } = useAuth();
+  const { address, signTransaction, user, email } = useAuth();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -116,7 +116,7 @@ export default function CreateGrant() {
         const appInfo = await algodClient.getApplicationByID(CHAIN_GRANT_APP_ID).do();
         const globalState = appInfo.params.globalState || [];
         const initializedVar = globalState.find((kv: any) => kv.key === 'aW5pdGlhbGl6ZWQ='); // base64 for 'initialized'
-        if (initializedVar?.value?.uint === BigInt(1)) {
+        if (initializedVar && initializedVar.value && Number(initializedVar.value.uint) === 1) {
           alert(
             `⚠️ Contract already has an active grant!\n\n` +
             `The smart contract escrow already holds locked funds from a previous grant.\n` +
@@ -163,7 +163,7 @@ export default function CreateGrant() {
         totalAmount: Number(totalAmount),
         studentEmail,
         studentAddress,
-        sponsorEmail: user?.email,
+        sponsorEmail: email || 'sponsor@example.com',
         sponsorAddress: address,
         fundingTxId,
         status: 'Active',
