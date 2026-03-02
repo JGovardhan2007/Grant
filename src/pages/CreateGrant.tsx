@@ -59,7 +59,9 @@ export default function CreateGrant() {
 
       // Convert INR to microALGO (1 INR = 1000 microALGO for testnet demo)
       // Add 100,000 microALGO (0.1 ALGO) Minimum Balance Requirement (MBR)
-      const MIN_BALANCE_REQ = 100_000n;
+      // 100k account + 100k opt-in + (28500 * ints) + (50000 * byte-slices + length)
+      // We will fund 300,000 microALGO (0.3 ALGO) as a safe MBR buffer for the contract's new memory
+      const MIN_BALANCE_REQ = 300_000n;
       const grantAmount = BigInt(Math.round(Number(totalAmount) * 1000));
       const microAlgo = grantAmount + MIN_BALANCE_REQ;
 
