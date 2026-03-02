@@ -18,15 +18,30 @@ const LoadingScreen = () => (
   </div>
 );
 
+/**
+ * A user is "authenticated" if they have EITHER:
+ * 1. A Firebase user (email/password login), OR
+ * 2. A connected Pera Wallet address with a saved role (wallet login)
+ */
+const useIsAuthenticated = () => {
+  const { user, address, role, loading } = useAuth();
+  const isWalletAuthenticated = !!(address && role);
+  const isFirebaseAuthenticated = !!user;
+  return { isAuthenticated: isFirebaseAuthenticated || isWalletAuthenticated, loading };
+};
+
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, role, loading } = useAuth();
+  const { user, address, role, loading } = useAuth();
 
   if (loading) return <LoadingScreen />;
-  if (!user) return <Navigate to="/" replace />;
-  if (user && !role) {
-    // Role still fetching from Firestore
-    return <LoadingScreen />;
-  }
+
+  // Allow if Firebase user OR wallet session
+  const isWalletSession = !!(address && role);
+  if (!user && !isWalletSession) return <Navigate to="/" replace />;
+
+  // If Firebase user but role still loading from Firestore
+  if (user && !role && !isWalletSession) return <LoadingScreen />;
+
   return <>{children}</>;
 };
 
@@ -37,16 +52,17 @@ const SponsorRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 };
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, address, loading } = useAuth();
+  const isLoggedIn = !!(user || address);
 
   if (loading) return <LoadingScreen />;
 
   return (
     <div className="min-h-screen bg-white font-sans text-gray-900">
-      {user && <Navbar />}
+      {isLoggedIn && <Navbar />}
       <div className="flex">
-        {user && <Sidebar />}
-        <main className={`flex-1 p-6 md:p-10 ${user ? 'mt-16 md:ml-64' : ''}`}>
+        {isLoggedIn && <Sidebar />}
+        <main className={`flex-1 p-6 md:p-10 ${isLoggedIn ? 'mt-16 md:ml-64' : ''}`}>
           {children}
         </main>
       </div>
@@ -76,8 +92,9 @@ export default function App() {
 }
 
 const LoginRedirect: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, address, role, loading } = useAuth();
   if (loading) return <LoadingScreen />;
-  if (user) return <Navigate to="/dashboard" replace />;
+  // Redirect to dashboard if either Firebase user OR wallet session exists
+  if (user || (address && role)) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 };
