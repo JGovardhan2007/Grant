@@ -162,7 +162,7 @@ export default function CreateGrant() {
       const deployResult = await algosdk.waitForConfirmation(algodClient, deployTxId, 4);
       // Depending on the algosdk version, this property name varies. Safe casting:
       const newAppId = Number((deployResult as any)['application-index'] || (deployResult as any).applicationIndex);
-      const newAppAddress = algosdk.getApplicationAddress(newAppId);
+      const newAppAddress = algosdk.getApplicationAddress(newAppId).toString();
       console.log(`Successfully deployed App ID: ${newAppId} at Address: ${newAppAddress}`);
 
       // ═══════════════════════════════════════════════════════════════════
