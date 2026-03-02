@@ -1,10 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { PeraWalletConnect } from '@perawallet/connect';
+
+const peraWallet = new PeraWalletConnect();
 
 type Role = 'Sponsor' | 'Student' | null;
 
 interface AuthContextType {
   role: Role;
   setRole: (role: Role) => void;
+  address: string | null;
+  connectWallet: () => Promise<void>;
   logout: () => void;
 }
 
@@ -15,6 +20,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const savedRole = localStorage.getItem('chainGrantRole');
     return (savedRole as Role) || null;
   });
+  const [address, setAddress] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Reconnect to Pera Wallet session on mount
+    peraWallet.reconnectSession().then((accounts) => {
+      if (accounts.length > 0) {
+        setAddress(accounts[0]);
+      }
+    });
+
+    // Pera Wallet usually doesn't need an 'on' listener for disconnect if we handle it in logout
+  }, []);
+
+  const connectWallet = async () => {
+    try {
+      const accounts = await peraWallet.connect();
+      if (accounts.length > 0) {
+        setAddress(accounts[0]);
+      }
+    } catch (error) {
+      console.error('Wallet connection failed:', error);
+    }
+  };
 
   const setRole = (newRole: Role) => {
     setRoleState(newRole);
@@ -26,11 +54,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    peraWallet.disconnect();
     setRole(null);
+    setAddress(null);
   };
 
   return (
-    <AuthContext.Provider value={{ role, setRole, logout }}>
+    <AuthContext.Provider value={{ role, setRole, address, connectWallet, logout }}>
       {children}
     </AuthContext.Provider>
   );

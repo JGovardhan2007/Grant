@@ -10,8 +10,10 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export default function Navbar() {
-  const { role, logout } = useAuth();
+  const { role, logout, connectWallet, address } = useAuth();
   const location = useLocation();
+
+  const shortenedAddress = address ? `${address.substring(0, 4)}...${address.substring(address.length - 4)}` : '';
 
   if (location.pathname === '/') return null;
 
@@ -32,13 +34,19 @@ export default function Navbar() {
           <span className={cn("w-2 h-2 rounded-full", role === 'Sponsor' ? "bg-blue-600" : "bg-emerald-600")}></span>
           {role}
         </div>
-        
-        <button className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-900 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors">
+
+        <button
+          onClick={address ? undefined : connectWallet}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+            address ? "bg-emerald-50 text-emerald-700" : "bg-blue-50 text-blue-900 hover:bg-blue-100"
+          )}
+        >
           <Wallet size={16} />
-          Connect Pera Wallet
+          {address ? shortenedAddress : "Connect Pera Wallet"}
         </button>
 
-        <button 
+        <button
           onClick={logout}
           className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-red-600 rounded-lg text-sm font-medium transition-colors"
         >
