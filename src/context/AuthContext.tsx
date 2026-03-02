@@ -4,7 +4,6 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signInAnonymously,
   signOut,
   User
 } from 'firebase/auth';
@@ -14,6 +13,9 @@ import { auth, db } from '../lib/firebase';
 const peraWallet = new PeraWalletConnect();
 
 type Role = 'Sponsor' | 'Student' | null;
+
+// localStorage helpers for wallet-based identity (no Firebase Auth needed)
+const WALLET_ROLE_KEY = (addr: string) => `chainGrant_role_${addr}`;
 
 interface AuthContextType {
   user: User | null;
@@ -42,22 +44,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
-        // Try to fetch role from Firestore wallet-based user doc first, then UID doc
-        const walletAddr = address;
-        if (walletAddr) {
-          const walletDoc = await getDoc(doc(db, 'walletUsers', walletAddr));
-          if (walletDoc.exists()) {
-            setRoleState(walletDoc.data().role as Role);
-            setLoading(false);
-            return;
-          }
-        }
         const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
         if (userDoc.exists()) {
           setRoleState(userDoc.data().role as Role);
         }
       } else {
-        setRoleState(null);
+        // If no Firebase user, role will be restored from wallet reconnect below
       }
       setLoading(false);
     });
@@ -67,7 +59,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const accounts = await peraWallet.reconnectSession();
         if (accounts.length > 0) {
-          setAddress(accounts[0]);
+          const walletAddr = accounts[0];
+          setAddress(walletAddr);
+          // Restore role from localStorage (wallet-based login)
+          const storedRole = localStorage.getItem(WALLET_ROLE_KEY(walletAddr)) as Role | null;
+          if (storedRole) {
+            setRoleState(storedRole);
+            setLoading(false); // Role is restored, no longer loading
+          }
         }
       } catch (e) {
         console.log('Pera reconnect failed', e);
@@ -75,7 +74,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     reconnectPera();
-
     return () => unsubscribe();
   }, []);
 
@@ -96,39 +94,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   /**
-   * Connect Pera Wallet and use it as primary identity (wallet-based auth).
-   * Signs in anonymously with Firebase (for Firestore access) and stores
-   * the wallet address as the unique identifier under walletUsers/{address}.
+   * Connect Pera Wallet and use wallet address as primary identity.
+   * Role is stored in localStorage — no Firebase Anonymous Auth needed.
    */
   const connectWalletAndLogin = async (selectedRole: Role) => {
-    try {
-      const accounts = await peraWallet.connect();
-      if (accounts.length === 0) return;
+    const accounts = await peraWallet.connect();
+    if (accounts.length === 0) throw new Error('No accounts returned from wallet');
 
-      const walletAddress = accounts[0];
-      setAddress(walletAddress);
+    const walletAddress = accounts[0];
+    setAddress(walletAddress);
+    setRoleState(selectedRole);
 
-      // Sign in anonymously to get a Firebase UID (required for Firestore rules)
-      const anonRes = await signInAnonymously(auth);
-
-      // Create or update the walletUsers document
-      const walletDocRef = doc(db, 'walletUsers', walletAddress);
-      const walletDoc = await getDoc(walletDocRef);
-
-      if (!walletDoc.exists()) {
-        await setDoc(walletDocRef, {
-          walletAddress,
-          role: selectedRole,
-          firebaseUid: anonRes.user.uid,
-          createdAt: new Date().toISOString()
-        });
-        setRoleState(selectedRole);
-      } else {
-        setRoleState(walletDoc.data().role as Role);
-      }
-    } catch (error) {
-      console.error('Wallet login failed:', error);
-      throw error;
+    // Persist role in localStorage keyed by wallet address
+    if (selectedRole) {
+      localStorage.setItem(WALLET_ROLE_KEY(walletAddress), selectedRole);
     }
   };
 
@@ -137,6 +116,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const accounts = await peraWallet.connect();
       if (accounts.length > 0) {
         setAddress(accounts[0]);
+        // Restore role from localStorage if previously logged in via wallet
+        const storedRole = localStorage.getItem(WALLET_ROLE_KEY(accounts[0])) as Role;
+        if (storedRole) setRoleState(storedRole);
       }
     } catch (error) {
       console.error('Wallet connection failed:', error);
@@ -149,10 +131,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const disconnectWallet = async () => {
     try {
       await peraWallet.disconnect();
-    } catch (e) {
-      // Ignore disconnect errors
-    }
+    } catch (e) { /* ignore */ }
     setAddress(null);
+    // Keep role so email-based users aren't affected
   };
 
   const signTransaction = async (txns: any[]) => {
@@ -168,12 +149,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (user && newRole) {
       await setDoc(doc(db, 'users', user.uid), { role: newRole }, { merge: true });
     }
+    // Also persist in localStorage if wallet-based
+    if (address && newRole) {
+      localStorage.setItem(WALLET_ROLE_KEY(address), newRole);
+    }
     setRoleState(newRole);
   };
 
   const logout = async () => {
     await signOut(auth);
     try { await peraWallet.disconnect(); } catch (e) { /* ignore */ }
+    if (address) localStorage.removeItem(WALLET_ROLE_KEY(address));
     setAddress(null);
     setRoleState(null);
   };
