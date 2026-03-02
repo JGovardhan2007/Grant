@@ -115,10 +115,7 @@ export default function CreateGrant() {
       try {
         const appInfo = await algodClient.getApplicationByID(CHAIN_GRANT_APP_ID).do();
         const globalState = appInfo.params.globalState || [];
-        const initializedVar = globalState.find((kv: any) => {
-          const key = atob(kv.key);
-          return key === 'initialized';
-        });
+        const initializedVar = globalState.find((kv: any) => kv.key === 'aW5pdGlhbGl6ZWQ='); // base64 for 'initialized'
         if (initializedVar?.value?.uint === BigInt(1)) {
           alert(
             `⚠️ Contract already has an active grant!\n\n` +
