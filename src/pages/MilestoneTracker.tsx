@@ -486,7 +486,7 @@ export default function MilestoneTracker() {
               Audit Transaction Wall
             </Link>
 
-            {(user as any)?.role === 'Sponsor' && grant.status === 'Active' && (
+            {role === 'Sponsor' && grant.status === 'Active' && (
               <button
                 onClick={handleCloseGrant}
                 disabled={releasing === 'closing'}
