@@ -3,7 +3,7 @@
   "sources": [
     "../contract.py"
   ],
-  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AA2BA;;AAAA;;;AAAA;;AAAA;AAAA;AAAA;;AAAA;AAAA;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA;;;AAAA;;;;;;;;;;;;;;;;AAAA;AAcK;;AAAA;AAAA;AAGG;AAAyB;AAAzB;AAHH;AAAA;AASA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAiBU;AAAA;AAAA;AAAA;AAAA;AAAP;AACO;AAAA;;AAAoB;;AAApB;AAAP;AACO;;AAAP;AAAA;AAEA;AAAqB;;AAArB;AACqB;AAAA;;AAAA;AAAA;AAArB;;AAAA;;AAAA;AACA;AAAA;AAAA;AACA;AAAsB;AAAtB;AACA;AAAyB;AAAzB;AAzBH;AAAA;AA+BA;;;AAAA;AAAA;AAAA;;AAAA;AAAA;AAMU;AAAA;AAAA;AAAA;AAA0B;AAA1B;AAAP;AACO;;AAAc;AAAA;AAAA;AAAA;AAAd;AAAP;AAEiB;AACL;AAAA;AAAA;AAAA;AAA0B;AAAA;AAAA;AAAA;AAA1B;AAAA;;AAAA;AACL;;AAAA;AAAP;AACA;;AAAA;AAEA;AACa;AAAA;;AAAA;AAAA;;;;;;;AADb;;;AAGQ;;;AAHR;AAMsB;AAAtB;AAAA;AAAA;AApBH;AAAA;AA0BA;;;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;AAAA;AAMU;AAAA;AAAA;AAAA;AAA0B;AAA1B;AAAP;AACO;;AAAc;AAAA;AAAA;AAAA;AAAd;AAAP;AAPH;AAAA;AAiBU;AAAA;AAAA;AAAA;AAA0B;AAA1B;AAAP;AACO;;AAAc;AAAA;AAAA;AAAA;AAAd;AAAP;AAEY;AAAA;AAAA;AAAA;AAA0B;AAAA;AAAA;AAAA;AAA1B;AAAA;AACpB;;;AACY;AACa;AAAA;AAAA;AAAA;;;;;;;AADb;;;AAGQ;;;AAHR;AAMJ;AAAyB;AAAzB;AAdH;AAAA;AAuBsB;AAAA;AAAA;AAAA;AAA0B;AAAA;AAAA;AAAA;AAA1B;AAAZ;AAHV;;AAAA;AAAA;AAAA;AAAA;AAAA;AAQuB;AAAA;;AAAA;AAAA;AAAb;AAAA;AAAA;AAAA;AAAA;AAHV;;AAAA;AAAA;AAAA;AAAA;AAAA;AAQuB;AAAA;AAAA;AAAA;AAAb;AAAA;AAAA;AAAA;AAAA;AAHV;;AAAA;AAAA;AAAA;AAAA;AAAA",
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AA4BA;;AAAA;;;AAAA;;AAAA;AAAA;AAAA;;AAAA;AAAA;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA;;;AAAA;;;;;;;;;;;;;;;;AAAA;AAgBK;;AAAA;AAAA;AAGG;AAAyB;AAAzB;AAHH;AAAA;AASA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAiBU;AAAA;AAAA;AAAA;AAAA;AAAP;AACO;AAAA;;AAAoB;;AAApB;AAAP;AACO;;AAAP;AAAA;AAEA;AAAqB;;AAArB;AACqB;AAAA;;AAAA;AAAA;AAArB;;AAAA;;AAAA;AACA;AAAA;AAAA;AACA;AAAsB;AAAtB;AACA;;AAA+B;;AAA/B;AACA;AAAyB;AAAzB;AA1BH;AAAA;AAgCA;;;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAMU;AAAA;AAAA;AAAA;AAA0B;AAA1B;AAAP;AACO;;AAAc;AAAA;AAAA;AAAA;AAAd;AAAP;AAEoB;AAAA;AACR;AAAA;AAAA;AAAA;AAA0B;AAAA;AAAA;AAAA;AAA1B;AAAA;;AAAA;AACL;;AAAA;AAAP;AACA;;AAAA;AAEA;AACa;AAAA;;AAAA;AAAA;;;;;;;AADb;;;AAGQ;;;AAHR;AAMsB;AAAtB;AAAA;AAAA;AAC+B;;;AAA/B;;AAAA;AAAA;AArBH;AAAA;AA2BA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAMU;AAAA;AAAA;AAAA;AAA0B;AAA1B;AAAP;AACO;;AAAc;AAAA;AAAA;AAAA;AAAd;AAAP;AAPH;AAAA;AAiBU;AAAA;AAAA;AAAA;AAA0B;AAA1B;AAAP;AACO;;AAAc;AAAA;AAAA;AAAA;AAAd;AAAP;AAEY;AAAA;AAAA;AAAA;AAA0B;AAAA;AAAA;AAAA;AAA1B;AAAA;AACpB;;;AACY;AACa;AAAA;AAAA;AAAA;;;;;;;AADb;;;AAGQ;;;AAHR;AAMJ;AAAyB;AAAzB;AAdH;AAAA;AAuBsB;AAAA;AAAA;AAAA;AAA0B;AAAA;AAAA;AAAA;AAA1B;AAAZ;AAHV;;AAAA;AAAA;AAAA;AAAA;AAAA;AAQuB;AAAA;;AAAA;AAAA;AAAb;AAAA;AAAA;AAAA;AAAA;AAHV;;AAAA;AAAA;AAAA;AAAA;AAAA;AAQuB;AAAA;AAAA;AAAA;AAAb;AAAA;AAAA;AAAA;AAAA;AAHV;;AAAA;AAAA;AAAA;AAAA;AAAA",
   "op_pc_offset": 0,
   "pc_events": {
     "1": {
@@ -11,12 +11,12 @@
       "params": {},
       "block": "main",
       "stack_in": [],
-      "op": "intcblock 0 1 32"
+      "op": "intcblock 0 1 32 2"
     },
-    "6": {
-      "op": "bytecblock \"initialized\" \"sponsor\" \"released\" \"total_locked\" \"student\" 0x151f7c75"
+    "7": {
+      "op": "bytecblock \"initialized\" \"sponsor\" \"released\" \"total_locked\" \"student\" 0x151f7c75 \"latest_proof_hash\""
     },
-    "63": {
+    "82": {
       "op": "txn NumAppArgs",
       "defined_out": [
         "tmp%0#1"
@@ -25,11 +25,11 @@
         "tmp%0#1"
       ]
     },
-    "65": {
+    "84": {
       "op": "bz main_create@16",
       "stack_out": []
     },
-    "68": {
+    "87": {
       "op": "txn OnCompletion",
       "defined_out": [
         "tmp%2#0"
@@ -38,7 +38,7 @@
         "tmp%2#0"
       ]
     },
-    "70": {
+    "89": {
       "op": "!",
       "defined_out": [
         "tmp%3#0"
@@ -47,11 +47,11 @@
         "tmp%3#0"
       ]
     },
-    "71": {
+    "90": {
       "op": "assert",
       "stack_out": []
     },
-    "72": {
+    "91": {
       "op": "txn ApplicationID",
       "defined_out": [
         "tmp%4#0"
@@ -60,24 +60,24 @@
         "tmp%4#0"
       ]
     },
-    "74": {
+    "93": {
       "op": "assert",
       "stack_out": []
     },
-    "75": {
-      "op": "pushbytess 0xdd74afba 0x194618cb 0xfccc4abb 0x643be059 0xb910c77b 0xc5691386 0xbf959764 // method \"initialize_grant(address,pay)void\", method \"release_funds(uint64)void\", method \"request_changes(string)void\", method \"close_grant()void\", method \"get_balance()uint64\", method \"get_student()address\", method \"get_sponsor()address\"",
+    "94": {
+      "op": "pushbytess 0xdd74afba 0x52ca0ca1 0xfccc4abb 0x643be059 0xb910c77b 0xc5691386 0xbf959764 // method \"initialize_grant(address,pay)void\", method \"release_funds(uint64,string)void\", method \"request_changes(string)void\", method \"close_grant()void\", method \"get_balance()uint64\", method \"get_student()address\", method \"get_sponsor()address\"",
       "defined_out": [
         "Method(close_grant()void)",
         "Method(get_balance()uint64)",
         "Method(get_sponsor()address)",
         "Method(get_student()address)",
         "Method(initialize_grant(address,pay)void)",
-        "Method(release_funds(uint64)void)",
+        "Method(release_funds(uint64,string)void)",
         "Method(request_changes(string)void)"
       ],
       "stack_out": [
         "Method(initialize_grant(address,pay)void)",
-        "Method(release_funds(uint64)void)",
+        "Method(release_funds(uint64,string)void)",
         "Method(request_changes(string)void)",
         "Method(close_grant()void)",
         "Method(get_balance()uint64)",
@@ -85,7 +85,7 @@
         "Method(get_sponsor()address)"
       ]
     },
-    "112": {
+    "131": {
       "op": "txna ApplicationArgs 0",
       "defined_out": [
         "Method(close_grant()void)",
@@ -93,13 +93,13 @@
         "Method(get_sponsor()address)",
         "Method(get_student()address)",
         "Method(initialize_grant(address,pay)void)",
-        "Method(release_funds(uint64)void)",
+        "Method(release_funds(uint64,string)void)",
         "Method(request_changes(string)void)",
         "tmp%6#0"
       ],
       "stack_out": [
         "Method(initialize_grant(address,pay)void)",
-        "Method(release_funds(uint64)void)",
+        "Method(release_funds(uint64,string)void)",
         "Method(request_changes(string)void)",
         "Method(close_grant()void)",
         "Method(get_balance()uint64)",
@@ -108,14 +108,14 @@
         "tmp%6#0"
       ]
     },
-    "115": {
+    "134": {
       "op": "match initialize_grant release_funds request_changes close_grant get_balance get_student get_sponsor",
       "stack_out": []
     },
-    "131": {
+    "150": {
       "op": "err"
     },
-    "132": {
+    "151": {
       "block": "main_create@16",
       "stack_in": [],
       "op": "txn OnCompletion",
@@ -126,7 +126,7 @@
         "tmp%7#0"
       ]
     },
-    "134": {
+    "153": {
       "op": "!",
       "defined_out": [
         "tmp%8#0"
@@ -135,11 +135,11 @@
         "tmp%8#0"
       ]
     },
-    "135": {
+    "154": {
       "op": "assert",
       "stack_out": []
     },
-    "136": {
+    "155": {
       "op": "bytec_0 // \"initialized\"",
       "defined_out": [
         "\"initialized\""
@@ -148,7 +148,7 @@
         "\"initialized\""
       ]
     },
-    "137": {
+    "156": {
       "op": "intc_0 // 0",
       "defined_out": [
         "\"initialized\"",
@@ -159,11 +159,11 @@
         "0"
       ]
     },
-    "138": {
+    "157": {
       "op": "app_global_put",
       "stack_out": []
     },
-    "139": {
+    "158": {
       "op": "intc_1 // 1",
       "defined_out": [
         "1"
@@ -172,11 +172,11 @@
         "1"
       ]
     },
-    "140": {
+    "159": {
       "op": "return",
       "stack_out": []
     },
-    "141": {
+    "160": {
       "subroutine": "contract.ChainGrant.initialize_grant[routing]",
       "params": {},
       "block": "initialize_grant",
@@ -189,7 +189,7 @@
         "student#0"
       ]
     },
-    "144": {
+    "163": {
       "op": "dup",
       "defined_out": [
         "student#0",
@@ -200,7 +200,7 @@
         "student#0 (copy)"
       ]
     },
-    "145": {
+    "164": {
       "op": "len",
       "defined_out": [
         "len%0#0",
@@ -211,7 +211,7 @@
         "len%0#0"
       ]
     },
-    "146": {
+    "165": {
       "op": "dup",
       "defined_out": [
         "len%0#0",
@@ -224,7 +224,7 @@
         "len%0#0 (copy)"
       ]
     },
-    "147": {
+    "166": {
       "op": "intc_2 // 32",
       "defined_out": [
         "32",
@@ -239,7 +239,7 @@
         "32"
       ]
     },
-    "148": {
+    "167": {
       "op": "==",
       "defined_out": [
         "eq%0#0",
@@ -252,7 +252,7 @@
         "eq%0#0"
       ]
     },
-    "149": {
+    "168": {
       "error": "invalid number of bytes for arc4.static_array<arc4.uint8, 32>",
       "op": "assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>",
       "stack_out": [
@@ -260,7 +260,7 @@
         "len%0#0"
       ]
     },
-    "150": {
+    "169": {
       "op": "txn GroupIndex",
       "defined_out": [
         "len%0#0",
@@ -273,7 +273,7 @@
         "tmp%1#0"
       ]
     },
-    "152": {
+    "171": {
       "op": "intc_1 // 1",
       "defined_out": [
         "1",
@@ -288,7 +288,7 @@
         "1"
       ]
     },
-    "153": {
+    "172": {
       "op": "-",
       "defined_out": [
         "len%0#0",
@@ -301,7 +301,7 @@
         "payment#0"
       ]
     },
-    "154": {
+    "173": {
       "op": "dup",
       "defined_out": [
         "len%0#0",
@@ -316,7 +316,7 @@
         "payment#0 (copy)"
       ]
     },
-    "155": {
+    "174": {
       "op": "gtxns TypeEnum",
       "defined_out": [
         "gtxn_type%0#0",
@@ -331,7 +331,7 @@
         "gtxn_type%0#0"
       ]
     },
-    "157": {
+    "176": {
       "op": "intc_1 // pay",
       "defined_out": [
         "gtxn_type%0#0",
@@ -348,7 +348,7 @@
         "pay"
       ]
     },
-    "158": {
+    "177": {
       "op": "==",
       "defined_out": [
         "gtxn_type_matches%0#0",
@@ -363,7 +363,7 @@
         "gtxn_type_matches%0#0"
       ]
     },
-    "159": {
+    "178": {
       "error": "transaction type is pay",
       "op": "assert // transaction type is pay",
       "stack_out": [
@@ -372,7 +372,7 @@
         "payment#0"
       ]
     },
-    "160": {
+    "179": {
       "op": "intc_0 // 0",
       "defined_out": [
         "0",
@@ -387,7 +387,7 @@
         "0"
       ]
     },
-    "161": {
+    "180": {
       "op": "bytec_0 // \"initialized\"",
       "defined_out": [
         "\"initialized\"",
@@ -404,7 +404,7 @@
         "\"initialized\""
       ]
     },
-    "162": {
+    "181": {
       "op": "app_global_get_ex",
       "defined_out": [
         "len%0#0",
@@ -421,7 +421,7 @@
         "maybe_exists%0#0"
       ]
     },
-    "163": {
+    "182": {
       "error": "check self.initialized exists",
       "op": "assert // check self.initialized exists",
       "stack_out": [
@@ -431,7 +431,7 @@
         "maybe_value%0#0"
       ]
     },
-    "164": {
+    "183": {
       "op": "!",
       "defined_out": [
         "len%0#0",
@@ -446,7 +446,7 @@
         "tmp%0#1"
       ]
     },
-    "165": {
+    "184": {
       "error": "Grant already initialized",
       "op": "assert // Grant already initialized",
       "stack_out": [
@@ -455,7 +455,7 @@
         "payment#0"
       ]
     },
-    "166": {
+    "185": {
       "op": "dup",
       "stack_out": [
         "student#0",
@@ -464,7 +464,7 @@
         "payment#0 (copy)"
       ]
     },
-    "167": {
+    "186": {
       "op": "gtxns Receiver",
       "defined_out": [
         "len%0#0",
@@ -479,7 +479,7 @@
         "tmp%1#1"
       ]
     },
-    "169": {
+    "188": {
       "op": "global CurrentApplicationAddress",
       "defined_out": [
         "len%0#0",
@@ -496,7 +496,7 @@
         "tmp%2#0"
       ]
     },
-    "171": {
+    "190": {
       "op": "==",
       "defined_out": [
         "len%0#0",
@@ -511,7 +511,7 @@
         "tmp%3#0"
       ]
     },
-    "172": {
+    "191": {
       "error": "Payment must go to app",
       "op": "assert // Payment must go to app",
       "stack_out": [
@@ -520,7 +520,7 @@
         "payment#0"
       ]
     },
-    "173": {
+    "192": {
       "op": "gtxns Amount",
       "defined_out": [
         "len%0#0",
@@ -533,7 +533,7 @@
         "tmp%4#0"
       ]
     },
-    "175": {
+    "194": {
       "op": "dup",
       "defined_out": [
         "len%0#0",
@@ -548,7 +548,7 @@
         "tmp%4#0 (copy)"
       ]
     },
-    "176": {
+    "195": {
       "error": "Must lock at least 1 microALGO",
       "op": "assert // Must lock at least 1 microALGO",
       "stack_out": [
@@ -557,7 +557,7 @@
         "tmp%4#0"
       ]
     },
-    "177": {
+    "196": {
       "op": "bytec_1 // \"sponsor\"",
       "defined_out": [
         "\"sponsor\"",
@@ -572,7 +572,7 @@
         "\"sponsor\""
       ]
     },
-    "178": {
+    "197": {
       "op": "txn Sender",
       "defined_out": [
         "\"sponsor\"",
@@ -589,7 +589,7 @@
         "tmp%6#0"
       ]
     },
-    "180": {
+    "199": {
       "op": "app_global_put",
       "stack_out": [
         "student#0",
@@ -597,7 +597,7 @@
         "tmp%4#0"
       ]
     },
-    "181": {
+    "200": {
       "op": "intc_2 // 32",
       "stack_out": [
         "student#0",
@@ -606,7 +606,7 @@
         "32"
       ]
     },
-    "182": {
+    "201": {
       "op": "uncover 2",
       "stack_out": [
         "student#0",
@@ -615,7 +615,7 @@
         "len%0#0"
       ]
     },
-    "184": {
+    "203": {
       "op": "==",
       "defined_out": [
         "student#0",
@@ -628,7 +628,7 @@
         "tmp%8#0"
       ]
     },
-    "185": {
+    "204": {
       "error": "Address length is 32 bytes",
       "op": "assert // Address length is 32 bytes",
       "stack_out": [
@@ -636,7 +636,7 @@
         "tmp%4#0"
       ]
     },
-    "186": {
+    "205": {
       "op": "bytec 4 // \"student\"",
       "defined_out": [
         "\"student\"",
@@ -649,7 +649,7 @@
         "\"student\""
       ]
     },
-    "188": {
+    "207": {
       "op": "uncover 2",
       "stack_out": [
         "tmp%4#0",
@@ -657,13 +657,13 @@
         "student#0"
       ]
     },
-    "190": {
+    "209": {
       "op": "app_global_put",
       "stack_out": [
         "tmp%4#0"
       ]
     },
-    "191": {
+    "210": {
       "op": "bytec_3 // \"total_locked\"",
       "defined_out": [
         "\"total_locked\"",
@@ -674,18 +674,18 @@
         "\"total_locked\""
       ]
     },
-    "192": {
+    "211": {
       "op": "swap",
       "stack_out": [
         "\"total_locked\"",
         "tmp%4#0"
       ]
     },
-    "193": {
+    "212": {
       "op": "app_global_put",
       "stack_out": []
     },
-    "194": {
+    "213": {
       "op": "bytec_2 // \"released\"",
       "defined_out": [
         "\"released\""
@@ -694,597 +694,849 @@
         "\"released\""
       ]
     },
-    "195": {
+    "214": {
       "op": "intc_0 // 0",
       "stack_out": [
         "\"released\"",
         "0"
       ]
     },
-    "196": {
+    "215": {
       "op": "app_global_put",
       "stack_out": []
     },
-    "197": {
+    "216": {
+      "op": "bytec 6 // \"latest_proof_hash\"",
+      "defined_out": [
+        "\"latest_proof_hash\""
+      ],
+      "stack_out": [
+        "\"latest_proof_hash\""
+      ]
+    },
+    "218": {
+      "op": "pushbytes \"\"",
+      "defined_out": [
+        "\"\"",
+        "\"latest_proof_hash\""
+      ],
+      "stack_out": [
+        "\"latest_proof_hash\"",
+        "\"\""
+      ]
+    },
+    "220": {
+      "op": "app_global_put",
+      "stack_out": []
+    },
+    "221": {
       "op": "bytec_0 // \"initialized\"",
       "stack_out": [
         "\"initialized\""
       ]
     },
-    "198": {
+    "222": {
       "op": "intc_1 // 1",
       "stack_out": [
         "\"initialized\"",
         "1"
       ]
     },
-    "199": {
+    "223": {
       "op": "app_global_put",
       "stack_out": []
     },
-    "200": {
+    "224": {
       "op": "intc_1 // 1",
       "stack_out": [
         "1"
       ]
     },
-    "201": {
+    "225": {
       "op": "return",
       "stack_out": []
     },
-    "202": {
+    "226": {
       "subroutine": "contract.ChainGrant.release_funds[routing]",
       "params": {},
       "block": "release_funds",
       "stack_in": [],
       "op": "txna ApplicationArgs 1",
       "defined_out": [
-        "amount_micro_algo#0"
+        "release_amount#0"
       ],
       "stack_out": [
-        "amount_micro_algo#0"
+        "release_amount#0"
       ]
     },
-    "205": {
+    "229": {
       "op": "dup",
       "defined_out": [
-        "amount_micro_algo#0",
-        "amount_micro_algo#0 (copy)"
+        "release_amount#0",
+        "release_amount#0 (copy)"
       ],
       "stack_out": [
-        "amount_micro_algo#0",
-        "amount_micro_algo#0 (copy)"
+        "release_amount#0",
+        "release_amount#0 (copy)"
       ]
     },
-    "206": {
+    "230": {
       "op": "len",
       "defined_out": [
-        "amount_micro_algo#0",
-        "len%0#0"
+        "len%0#0",
+        "release_amount#0"
       ],
       "stack_out": [
-        "amount_micro_algo#0",
+        "release_amount#0",
         "len%0#0"
       ]
     },
-    "207": {
+    "231": {
       "op": "pushint 8",
       "defined_out": [
         "8",
-        "amount_micro_algo#0",
-        "len%0#0"
+        "len%0#0",
+        "release_amount#0"
       ],
       "stack_out": [
-        "amount_micro_algo#0",
+        "release_amount#0",
         "len%0#0",
         "8"
       ]
     },
-    "209": {
-      "op": "==",
-      "defined_out": [
-        "amount_micro_algo#0",
-        "eq%0#0"
-      ],
-      "stack_out": [
-        "amount_micro_algo#0",
-        "eq%0#0"
-      ]
-    },
-    "210": {
-      "error": "invalid number of bytes for arc4.uint64",
-      "op": "assert // invalid number of bytes for arc4.uint64",
-      "stack_out": [
-        "amount_micro_algo#0"
-      ]
-    },
-    "211": {
-      "op": "intc_0 // 0",
-      "defined_out": [
-        "0",
-        "amount_micro_algo#0"
-      ],
-      "stack_out": [
-        "amount_micro_algo#0",
-        "0"
-      ]
-    },
-    "212": {
-      "op": "bytec_0 // \"initialized\"",
-      "defined_out": [
-        "\"initialized\"",
-        "0",
-        "amount_micro_algo#0"
-      ],
-      "stack_out": [
-        "amount_micro_algo#0",
-        "0",
-        "\"initialized\""
-      ]
-    },
-    "213": {
-      "op": "app_global_get_ex",
-      "defined_out": [
-        "amount_micro_algo#0",
-        "maybe_exists%0#0",
-        "maybe_value%0#0"
-      ],
-      "stack_out": [
-        "amount_micro_algo#0",
-        "maybe_value%0#0",
-        "maybe_exists%0#0"
-      ]
-    },
-    "214": {
-      "error": "check self.initialized exists",
-      "op": "assert // check self.initialized exists",
-      "stack_out": [
-        "amount_micro_algo#0",
-        "maybe_value%0#0"
-      ]
-    },
-    "215": {
-      "op": "intc_1 // 1",
-      "defined_out": [
-        "1",
-        "amount_micro_algo#0",
-        "maybe_value%0#0"
-      ],
-      "stack_out": [
-        "amount_micro_algo#0",
-        "maybe_value%0#0",
-        "1"
-      ]
-    },
-    "216": {
-      "op": "==",
-      "defined_out": [
-        "amount_micro_algo#0",
-        "tmp%0#1"
-      ],
-      "stack_out": [
-        "amount_micro_algo#0",
-        "tmp%0#1"
-      ]
-    },
-    "217": {
-      "error": "Grant not initialized",
-      "op": "assert // Grant not initialized",
-      "stack_out": [
-        "amount_micro_algo#0"
-      ]
-    },
-    "218": {
-      "op": "txn Sender",
-      "defined_out": [
-        "amount_micro_algo#0",
-        "tmp%1#0"
-      ],
-      "stack_out": [
-        "amount_micro_algo#0",
-        "tmp%1#0"
-      ]
-    },
-    "220": {
-      "op": "intc_0 // 0",
-      "stack_out": [
-        "amount_micro_algo#0",
-        "tmp%1#0",
-        "0"
-      ]
-    },
-    "221": {
-      "op": "bytec_1 // \"sponsor\"",
-      "defined_out": [
-        "\"sponsor\"",
-        "0",
-        "amount_micro_algo#0",
-        "tmp%1#0"
-      ],
-      "stack_out": [
-        "amount_micro_algo#0",
-        "tmp%1#0",
-        "0",
-        "\"sponsor\""
-      ]
-    },
-    "222": {
-      "op": "app_global_get_ex",
-      "defined_out": [
-        "amount_micro_algo#0",
-        "maybe_exists%1#0",
-        "maybe_value%1#0",
-        "tmp%1#0"
-      ],
-      "stack_out": [
-        "amount_micro_algo#0",
-        "tmp%1#0",
-        "maybe_value%1#0",
-        "maybe_exists%1#0"
-      ]
-    },
-    "223": {
-      "error": "check self.sponsor exists",
-      "op": "assert // check self.sponsor exists",
-      "stack_out": [
-        "amount_micro_algo#0",
-        "tmp%1#0",
-        "maybe_value%1#0"
-      ]
-    },
-    "224": {
-      "op": "==",
-      "defined_out": [
-        "amount_micro_algo#0",
-        "tmp%2#0"
-      ],
-      "stack_out": [
-        "amount_micro_algo#0",
-        "tmp%2#0"
-      ]
-    },
-    "225": {
-      "error": "Only sponsor can release funds",
-      "op": "assert // Only sponsor can release funds",
-      "stack_out": [
-        "amount_micro_algo#0"
-      ]
-    },
-    "226": {
-      "op": "btoi",
-      "defined_out": [
-        "release_amount#0"
-      ],
-      "stack_out": [
-        "release_amount#0"
-      ]
-    },
-    "227": {
-      "op": "intc_0 // 0",
-      "stack_out": [
-        "release_amount#0",
-        "0"
-      ]
-    },
-    "228": {
-      "op": "bytec_3 // \"total_locked\"",
-      "defined_out": [
-        "\"total_locked\"",
-        "0",
-        "release_amount#0"
-      ],
-      "stack_out": [
-        "release_amount#0",
-        "0",
-        "\"total_locked\""
-      ]
-    },
-    "229": {
-      "op": "app_global_get_ex",
-      "defined_out": [
-        "maybe_exists%2#0",
-        "maybe_value%2#0",
-        "release_amount#0"
-      ],
-      "stack_out": [
-        "release_amount#0",
-        "maybe_value%2#0",
-        "maybe_exists%2#0"
-      ]
-    },
-    "230": {
-      "error": "check self.total_locked exists",
-      "op": "assert // check self.total_locked exists",
-      "stack_out": [
-        "release_amount#0",
-        "maybe_value%2#0"
-      ]
-    },
-    "231": {
-      "op": "intc_0 // 0",
-      "stack_out": [
-        "release_amount#0",
-        "maybe_value%2#0",
-        "0"
-      ]
-    },
-    "232": {
-      "op": "bytec_2 // \"released\"",
-      "defined_out": [
-        "\"released\"",
-        "0",
-        "maybe_value%2#0",
-        "release_amount#0"
-      ],
-      "stack_out": [
-        "release_amount#0",
-        "maybe_value%2#0",
-        "0",
-        "\"released\""
-      ]
-    },
     "233": {
-      "op": "app_global_get_ex",
+      "op": "==",
       "defined_out": [
-        "maybe_exists%3#0",
-        "maybe_value%2#0",
-        "maybe_value%3#0",
+        "eq%0#0",
         "release_amount#0"
       ],
       "stack_out": [
         "release_amount#0",
-        "maybe_value%2#0",
-        "maybe_value%3#0",
-        "maybe_exists%3#0"
+        "eq%0#0"
       ]
     },
     "234": {
-      "error": "check self.released exists",
-      "op": "assert // check self.released exists",
+      "error": "invalid number of bytes for arc4.uint64",
+      "op": "assert // invalid number of bytes for arc4.uint64",
       "stack_out": [
-        "release_amount#0",
-        "maybe_value%2#0",
-        "maybe_value%3#0"
+        "release_amount#0"
       ]
     },
     "235": {
-      "op": "swap",
-      "stack_out": [
-        "release_amount#0",
-        "maybe_value%3#0",
-        "maybe_value%2#0"
-      ]
-    },
-    "236": {
-      "op": "dig 1",
+      "op": "txna ApplicationArgs 2",
       "defined_out": [
-        "maybe_value%2#0",
-        "maybe_value%3#0",
-        "maybe_value%3#0 (copy)",
+        "proof_hash#0",
         "release_amount#0"
       ],
       "stack_out": [
         "release_amount#0",
-        "maybe_value%3#0",
-        "maybe_value%2#0",
-        "maybe_value%3#0 (copy)"
+        "proof_hash#0"
       ]
     },
     "238": {
-      "op": "-",
+      "op": "dup",
       "defined_out": [
-        "maybe_value%3#0",
-        "release_amount#0",
-        "remaining#0"
+        "proof_hash#0",
+        "proof_hash#0 (copy)",
+        "release_amount#0"
       ],
       "stack_out": [
         "release_amount#0",
-        "maybe_value%3#0",
-        "remaining#0"
+        "proof_hash#0",
+        "proof_hash#0 (copy)"
       ]
     },
     "239": {
-      "op": "dig 2",
+      "op": "intc_0 // 0",
       "defined_out": [
-        "maybe_value%3#0",
-        "release_amount#0",
-        "release_amount#0 (copy)",
-        "remaining#0"
+        "0",
+        "proof_hash#0",
+        "proof_hash#0 (copy)",
+        "release_amount#0"
       ],
       "stack_out": [
         "release_amount#0",
-        "maybe_value%3#0",
-        "remaining#0",
-        "release_amount#0 (copy)"
+        "proof_hash#0",
+        "proof_hash#0 (copy)",
+        "0"
+      ]
+    },
+    "240": {
+      "error": "invalid array length header",
+      "op": "extract_uint16 // on error: invalid array length header",
+      "defined_out": [
+        "aggregate%array_length%0#0",
+        "proof_hash#0",
+        "release_amount#0"
+      ],
+      "stack_out": [
+        "release_amount#0",
+        "proof_hash#0",
+        "aggregate%array_length%0#0"
       ]
     },
     "241": {
-      "op": ">=",
+      "op": "intc_3 // 2",
       "defined_out": [
-        "maybe_value%3#0",
-        "release_amount#0",
-        "tmp%5#0"
+        "2",
+        "aggregate%array_length%0#0",
+        "proof_hash#0",
+        "release_amount#0"
       ],
       "stack_out": [
         "release_amount#0",
-        "maybe_value%3#0",
-        "tmp%5#0"
+        "proof_hash#0",
+        "aggregate%array_length%0#0",
+        "2"
       ]
     },
     "242": {
-      "error": "Not enough locked funds",
-      "op": "assert // Not enough locked funds",
+      "op": "+",
+      "defined_out": [
+        "add%0#0",
+        "proof_hash#0",
+        "release_amount#0"
+      ],
       "stack_out": [
         "release_amount#0",
-        "maybe_value%3#0"
+        "proof_hash#0",
+        "add%0#0"
       ]
     },
     "243": {
       "op": "dig 1",
       "stack_out": [
         "release_amount#0",
-        "maybe_value%3#0",
-        "release_amount#0 (copy)"
+        "proof_hash#0",
+        "add%0#0",
+        "proof_hash#0 (copy)"
       ]
     },
     "245": {
-      "error": "Amount must be positive",
-      "op": "assert // Amount must be positive",
-      "stack_out": [
-        "release_amount#0",
-        "maybe_value%3#0"
-      ]
-    },
-    "246": {
-      "op": "itxn_begin"
-    },
-    "247": {
-      "op": "intc_0 // 0",
-      "stack_out": [
-        "release_amount#0",
-        "maybe_value%3#0",
-        "0"
-      ]
-    },
-    "248": {
-      "op": "bytec 4 // \"student\"",
+      "op": "len",
       "defined_out": [
-        "\"student\"",
-        "0",
-        "maybe_value%3#0",
+        "add%0#0",
+        "len%1#0",
+        "proof_hash#0",
         "release_amount#0"
       ],
       "stack_out": [
         "release_amount#0",
-        "maybe_value%3#0",
+        "proof_hash#0",
+        "add%0#0",
+        "len%1#0"
+      ]
+    },
+    "246": {
+      "op": "==",
+      "defined_out": [
+        "eq%1#0",
+        "proof_hash#0",
+        "release_amount#0"
+      ],
+      "stack_out": [
+        "release_amount#0",
+        "proof_hash#0",
+        "eq%1#0"
+      ]
+    },
+    "247": {
+      "error": "invalid number of bytes for arc4.dynamic_array<arc4.uint8>",
+      "op": "assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>",
+      "stack_out": [
+        "release_amount#0",
+        "proof_hash#0"
+      ]
+    },
+    "248": {
+      "op": "intc_0 // 0",
+      "stack_out": [
+        "release_amount#0",
+        "proof_hash#0",
+        "0"
+      ]
+    },
+    "249": {
+      "op": "bytec_0 // \"initialized\"",
+      "defined_out": [
+        "\"initialized\"",
         "0",
-        "\"student\""
+        "proof_hash#0",
+        "release_amount#0"
+      ],
+      "stack_out": [
+        "release_amount#0",
+        "proof_hash#0",
+        "0",
+        "\"initialized\""
       ]
     },
     "250": {
       "op": "app_global_get_ex",
       "defined_out": [
-        "maybe_exists%4#0",
-        "maybe_value%3#0",
-        "maybe_value%4#0",
+        "maybe_exists%0#0",
+        "maybe_value%0#0",
+        "proof_hash#0",
         "release_amount#0"
       ],
       "stack_out": [
         "release_amount#0",
+        "proof_hash#0",
+        "maybe_value%0#0",
+        "maybe_exists%0#0"
+      ]
+    },
+    "251": {
+      "error": "check self.initialized exists",
+      "op": "assert // check self.initialized exists",
+      "stack_out": [
+        "release_amount#0",
+        "proof_hash#0",
+        "maybe_value%0#0"
+      ]
+    },
+    "252": {
+      "op": "intc_1 // 1",
+      "defined_out": [
+        "1",
+        "maybe_value%0#0",
+        "proof_hash#0",
+        "release_amount#0"
+      ],
+      "stack_out": [
+        "release_amount#0",
+        "proof_hash#0",
+        "maybe_value%0#0",
+        "1"
+      ]
+    },
+    "253": {
+      "op": "==",
+      "defined_out": [
+        "proof_hash#0",
+        "release_amount#0",
+        "tmp%0#1"
+      ],
+      "stack_out": [
+        "release_amount#0",
+        "proof_hash#0",
+        "tmp%0#1"
+      ]
+    },
+    "254": {
+      "error": "Grant not initialized",
+      "op": "assert // Grant not initialized",
+      "stack_out": [
+        "release_amount#0",
+        "proof_hash#0"
+      ]
+    },
+    "255": {
+      "op": "txn Sender",
+      "defined_out": [
+        "proof_hash#0",
+        "release_amount#0",
+        "tmp%1#1"
+      ],
+      "stack_out": [
+        "release_amount#0",
+        "proof_hash#0",
+        "tmp%1#1"
+      ]
+    },
+    "257": {
+      "op": "intc_0 // 0",
+      "stack_out": [
+        "release_amount#0",
+        "proof_hash#0",
+        "tmp%1#1",
+        "0"
+      ]
+    },
+    "258": {
+      "op": "bytec_1 // \"sponsor\"",
+      "defined_out": [
+        "\"sponsor\"",
+        "0",
+        "proof_hash#0",
+        "release_amount#0",
+        "tmp%1#1"
+      ],
+      "stack_out": [
+        "release_amount#0",
+        "proof_hash#0",
+        "tmp%1#1",
+        "0",
+        "\"sponsor\""
+      ]
+    },
+    "259": {
+      "op": "app_global_get_ex",
+      "defined_out": [
+        "maybe_exists%1#0",
+        "maybe_value%1#0",
+        "proof_hash#0",
+        "release_amount#0",
+        "tmp%1#1"
+      ],
+      "stack_out": [
+        "release_amount#0",
+        "proof_hash#0",
+        "tmp%1#1",
+        "maybe_value%1#0",
+        "maybe_exists%1#0"
+      ]
+    },
+    "260": {
+      "error": "check self.sponsor exists",
+      "op": "assert // check self.sponsor exists",
+      "stack_out": [
+        "release_amount#0",
+        "proof_hash#0",
+        "tmp%1#1",
+        "maybe_value%1#0"
+      ]
+    },
+    "261": {
+      "op": "==",
+      "defined_out": [
+        "proof_hash#0",
+        "release_amount#0",
+        "tmp%2#0"
+      ],
+      "stack_out": [
+        "release_amount#0",
+        "proof_hash#0",
+        "tmp%2#0"
+      ]
+    },
+    "262": {
+      "error": "Only sponsor can release funds",
+      "op": "assert // Only sponsor can release funds",
+      "stack_out": [
+        "release_amount#0",
+        "proof_hash#0"
+      ]
+    },
+    "263": {
+      "op": "swap",
+      "stack_out": [
+        "proof_hash#0",
+        "release_amount#0"
+      ]
+    },
+    "264": {
+      "op": "btoi",
+      "defined_out": [
+        "amount_to_release#0",
+        "proof_hash#0"
+      ],
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0"
+      ]
+    },
+    "265": {
+      "op": "intc_0 // 0",
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0",
+        "0"
+      ]
+    },
+    "266": {
+      "op": "bytec_3 // \"total_locked\"",
+      "defined_out": [
+        "\"total_locked\"",
+        "0",
+        "amount_to_release#0",
+        "proof_hash#0"
+      ],
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0",
+        "0",
+        "\"total_locked\""
+      ]
+    },
+    "267": {
+      "op": "app_global_get_ex",
+      "defined_out": [
+        "amount_to_release#0",
+        "maybe_exists%2#0",
+        "maybe_value%2#0",
+        "proof_hash#0"
+      ],
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0",
+        "maybe_value%2#0",
+        "maybe_exists%2#0"
+      ]
+    },
+    "268": {
+      "error": "check self.total_locked exists",
+      "op": "assert // check self.total_locked exists",
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0",
+        "maybe_value%2#0"
+      ]
+    },
+    "269": {
+      "op": "intc_0 // 0",
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0",
+        "maybe_value%2#0",
+        "0"
+      ]
+    },
+    "270": {
+      "op": "bytec_2 // \"released\"",
+      "defined_out": [
+        "\"released\"",
+        "0",
+        "amount_to_release#0",
+        "maybe_value%2#0",
+        "proof_hash#0"
+      ],
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0",
+        "maybe_value%2#0",
+        "0",
+        "\"released\""
+      ]
+    },
+    "271": {
+      "op": "app_global_get_ex",
+      "defined_out": [
+        "amount_to_release#0",
+        "maybe_exists%3#0",
+        "maybe_value%2#0",
+        "maybe_value%3#0",
+        "proof_hash#0"
+      ],
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0",
+        "maybe_value%2#0",
+        "maybe_value%3#0",
+        "maybe_exists%3#0"
+      ]
+    },
+    "272": {
+      "error": "check self.released exists",
+      "op": "assert // check self.released exists",
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0",
+        "maybe_value%2#0",
+        "maybe_value%3#0"
+      ]
+    },
+    "273": {
+      "op": "swap",
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0",
+        "maybe_value%3#0",
+        "maybe_value%2#0"
+      ]
+    },
+    "274": {
+      "op": "dig 1",
+      "defined_out": [
+        "amount_to_release#0",
+        "maybe_value%2#0",
+        "maybe_value%3#0",
+        "maybe_value%3#0 (copy)",
+        "proof_hash#0"
+      ],
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0",
+        "maybe_value%3#0",
+        "maybe_value%2#0",
+        "maybe_value%3#0 (copy)"
+      ]
+    },
+    "276": {
+      "op": "-",
+      "defined_out": [
+        "amount_to_release#0",
+        "maybe_value%3#0",
+        "proof_hash#0",
+        "remaining#0"
+      ],
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0",
+        "maybe_value%3#0",
+        "remaining#0"
+      ]
+    },
+    "277": {
+      "op": "dig 2",
+      "defined_out": [
+        "amount_to_release#0",
+        "amount_to_release#0 (copy)",
+        "maybe_value%3#0",
+        "proof_hash#0",
+        "remaining#0"
+      ],
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0",
+        "maybe_value%3#0",
+        "remaining#0",
+        "amount_to_release#0 (copy)"
+      ]
+    },
+    "279": {
+      "op": ">=",
+      "defined_out": [
+        "amount_to_release#0",
+        "maybe_value%3#0",
+        "proof_hash#0",
+        "tmp%5#0"
+      ],
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0",
+        "maybe_value%3#0",
+        "tmp%5#0"
+      ]
+    },
+    "280": {
+      "error": "Not enough locked funds",
+      "op": "assert // Not enough locked funds",
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0",
+        "maybe_value%3#0"
+      ]
+    },
+    "281": {
+      "op": "dig 1",
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0",
+        "maybe_value%3#0",
+        "amount_to_release#0 (copy)"
+      ]
+    },
+    "283": {
+      "error": "Amount must be positive",
+      "op": "assert // Amount must be positive",
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0",
+        "maybe_value%3#0"
+      ]
+    },
+    "284": {
+      "op": "itxn_begin"
+    },
+    "285": {
+      "op": "intc_0 // 0",
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0",
+        "maybe_value%3#0",
+        "0"
+      ]
+    },
+    "286": {
+      "op": "bytec 4 // \"student\"",
+      "defined_out": [
+        "\"student\"",
+        "0",
+        "amount_to_release#0",
+        "maybe_value%3#0",
+        "proof_hash#0"
+      ],
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0",
+        "maybe_value%3#0",
+        "0",
+        "\"student\""
+      ]
+    },
+    "288": {
+      "op": "app_global_get_ex",
+      "defined_out": [
+        "amount_to_release#0",
+        "maybe_exists%4#0",
+        "maybe_value%3#0",
+        "maybe_value%4#0",
+        "proof_hash#0"
+      ],
+      "stack_out": [
+        "proof_hash#0",
+        "amount_to_release#0",
         "maybe_value%3#0",
         "maybe_value%4#0",
         "maybe_exists%4#0"
       ]
     },
-    "251": {
+    "289": {
       "error": "check self.student exists",
       "op": "assert // check self.student exists",
       "stack_out": [
-        "release_amount#0",
+        "proof_hash#0",
+        "amount_to_release#0",
         "maybe_value%3#0",
         "maybe_value%4#0"
       ]
     },
-    "252": {
+    "290": {
       "op": "dig 2",
       "stack_out": [
-        "release_amount#0",
+        "proof_hash#0",
+        "amount_to_release#0",
         "maybe_value%3#0",
         "maybe_value%4#0",
-        "release_amount#0 (copy)"
+        "amount_to_release#0 (copy)"
       ]
     },
-    "254": {
+    "292": {
       "op": "itxn_field Amount",
       "stack_out": [
-        "release_amount#0",
+        "proof_hash#0",
+        "amount_to_release#0",
         "maybe_value%3#0",
         "maybe_value%4#0"
       ]
     },
-    "256": {
+    "294": {
       "op": "itxn_field Receiver",
       "stack_out": [
-        "release_amount#0",
+        "proof_hash#0",
+        "amount_to_release#0",
         "maybe_value%3#0"
       ]
     },
-    "258": {
+    "296": {
       "op": "intc_1 // pay",
       "defined_out": [
+        "amount_to_release#0",
         "maybe_value%3#0",
         "pay",
-        "release_amount#0"
+        "proof_hash#0"
       ],
       "stack_out": [
-        "release_amount#0",
+        "proof_hash#0",
+        "amount_to_release#0",
         "maybe_value%3#0",
         "pay"
       ]
     },
-    "259": {
+    "297": {
       "op": "itxn_field TypeEnum",
       "stack_out": [
-        "release_amount#0",
+        "proof_hash#0",
+        "amount_to_release#0",
         "maybe_value%3#0"
       ]
     },
-    "261": {
+    "299": {
       "op": "intc_0 // 0",
       "stack_out": [
-        "release_amount#0",
+        "proof_hash#0",
+        "amount_to_release#0",
         "maybe_value%3#0",
         "0"
       ]
     },
-    "262": {
+    "300": {
       "op": "itxn_field Fee",
       "stack_out": [
-        "release_amount#0",
+        "proof_hash#0",
+        "amount_to_release#0",
         "maybe_value%3#0"
       ]
     },
-    "264": {
+    "302": {
       "op": "itxn_submit"
     },
-    "265": {
+    "303": {
       "op": "+",
       "defined_out": [
+        "proof_hash#0",
         "tmp%7#0"
       ],
       "stack_out": [
+        "proof_hash#0",
         "tmp%7#0"
       ]
     },
-    "266": {
+    "304": {
       "op": "bytec_2 // \"released\"",
       "stack_out": [
+        "proof_hash#0",
         "tmp%7#0",
         "\"released\""
       ]
     },
-    "267": {
+    "305": {
       "op": "swap",
       "stack_out": [
+        "proof_hash#0",
         "\"released\"",
         "tmp%7#0"
       ]
     },
-    "268": {
+    "306": {
+      "op": "app_global_put",
+      "stack_out": [
+        "proof_hash#0"
+      ]
+    },
+    "307": {
+      "op": "extract 2 0",
+      "defined_out": [
+        "tmp%8#0"
+      ],
+      "stack_out": [
+        "tmp%8#0"
+      ]
+    },
+    "310": {
+      "op": "bytec 6 // \"latest_proof_hash\"",
+      "defined_out": [
+        "\"latest_proof_hash\"",
+        "tmp%8#0"
+      ],
+      "stack_out": [
+        "tmp%8#0",
+        "\"latest_proof_hash\""
+      ]
+    },
+    "312": {
+      "op": "swap",
+      "stack_out": [
+        "\"latest_proof_hash\"",
+        "tmp%8#0"
+      ]
+    },
+    "313": {
       "op": "app_global_put",
       "stack_out": []
     },
-    "269": {
+    "314": {
       "op": "intc_1 // 1",
       "stack_out": [
         "1"
       ]
     },
-    "270": {
+    "315": {
       "op": "return",
       "stack_out": []
     },
-    "271": {
+    "316": {
       "subroutine": "contract.ChainGrant.request_changes[routing]",
       "params": {},
       "block": "request_changes",
@@ -1297,7 +1549,7 @@
         "milestone_name#0"
       ]
     },
-    "274": {
+    "319": {
       "op": "dup",
       "defined_out": [
         "milestone_name#0",
@@ -1308,7 +1560,7 @@
         "milestone_name#0 (copy)"
       ]
     },
-    "275": {
+    "320": {
       "op": "intc_0 // 0",
       "defined_out": [
         "0",
@@ -1321,7 +1573,7 @@
         "0"
       ]
     },
-    "276": {
+    "321": {
       "error": "invalid array length header",
       "op": "extract_uint16 // on error: invalid array length header",
       "defined_out": [
@@ -1333,8 +1585,8 @@
         "aggregate%array_length%0#0"
       ]
     },
-    "277": {
-      "op": "pushint 2",
+    "322": {
+      "op": "intc_3 // 2",
       "defined_out": [
         "2",
         "aggregate%array_length%0#0",
@@ -1346,7 +1598,7 @@
         "2"
       ]
     },
-    "279": {
+    "323": {
       "op": "+",
       "defined_out": [
         "add%0#0",
@@ -1357,14 +1609,14 @@
         "add%0#0"
       ]
     },
-    "280": {
+    "324": {
       "op": "swap",
       "stack_out": [
         "add%0#0",
         "milestone_name#0"
       ]
     },
-    "281": {
+    "325": {
       "op": "len",
       "defined_out": [
         "add%0#0",
@@ -1375,7 +1627,7 @@
         "len%0#0"
       ]
     },
-    "282": {
+    "326": {
       "op": "==",
       "defined_out": [
         "eq%0#0"
@@ -1384,18 +1636,18 @@
         "eq%0#0"
       ]
     },
-    "283": {
+    "327": {
       "error": "invalid number of bytes for arc4.dynamic_array<arc4.uint8>",
       "op": "assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>",
       "stack_out": []
     },
-    "284": {
+    "328": {
       "op": "intc_0 // 0",
       "stack_out": [
         "0"
       ]
     },
-    "285": {
+    "329": {
       "op": "bytec_0 // \"initialized\"",
       "defined_out": [
         "\"initialized\"",
@@ -1406,7 +1658,7 @@
         "\"initialized\""
       ]
     },
-    "286": {
+    "330": {
       "op": "app_global_get_ex",
       "defined_out": [
         "maybe_exists%0#0",
@@ -1417,14 +1669,14 @@
         "maybe_exists%0#0"
       ]
     },
-    "287": {
+    "331": {
       "error": "check self.initialized exists",
       "op": "assert // check self.initialized exists",
       "stack_out": [
         "maybe_value%0#0"
       ]
     },
-    "288": {
+    "332": {
       "op": "intc_1 // 1",
       "defined_out": [
         "1",
@@ -1435,7 +1687,7 @@
         "1"
       ]
     },
-    "289": {
+    "333": {
       "op": "==",
       "defined_out": [
         "tmp%0#1"
@@ -1444,12 +1696,12 @@
         "tmp%0#1"
       ]
     },
-    "290": {
+    "334": {
       "error": "Grant not initialized",
       "op": "assert // Grant not initialized",
       "stack_out": []
     },
-    "291": {
+    "335": {
       "op": "txn Sender",
       "defined_out": [
         "tmp%1#0"
@@ -1458,14 +1710,14 @@
         "tmp%1#0"
       ]
     },
-    "293": {
+    "337": {
       "op": "intc_0 // 0",
       "stack_out": [
         "tmp%1#0",
         "0"
       ]
     },
-    "294": {
+    "338": {
       "op": "bytec_1 // \"sponsor\"",
       "defined_out": [
         "\"sponsor\"",
@@ -1478,7 +1730,7 @@
         "\"sponsor\""
       ]
     },
-    "295": {
+    "339": {
       "op": "app_global_get_ex",
       "defined_out": [
         "maybe_exists%1#0",
@@ -1491,7 +1743,7 @@
         "maybe_exists%1#0"
       ]
     },
-    "296": {
+    "340": {
       "error": "check self.sponsor exists",
       "op": "assert // check self.sponsor exists",
       "stack_out": [
@@ -1499,7 +1751,7 @@
         "maybe_value%1#0"
       ]
     },
-    "297": {
+    "341": {
       "op": "==",
       "defined_out": [
         "tmp%2#0"
@@ -1508,22 +1760,22 @@
         "tmp%2#0"
       ]
     },
-    "298": {
+    "342": {
       "error": "Only sponsor can request changes",
       "op": "assert // Only sponsor can request changes",
       "stack_out": []
     },
-    "299": {
+    "343": {
       "op": "intc_1 // 1",
       "stack_out": [
         "1"
       ]
     },
-    "300": {
+    "344": {
       "op": "return",
       "stack_out": []
     },
-    "301": {
+    "345": {
       "subroutine": "contract.ChainGrant.close_grant[routing]",
       "params": {},
       "block": "close_grant",
@@ -1536,7 +1788,7 @@
         "0"
       ]
     },
-    "302": {
+    "346": {
       "op": "bytec_0 // \"initialized\"",
       "defined_out": [
         "\"initialized\"",
@@ -1547,7 +1799,7 @@
         "\"initialized\""
       ]
     },
-    "303": {
+    "347": {
       "op": "app_global_get_ex",
       "defined_out": [
         "maybe_exists%0#0",
@@ -1558,14 +1810,14 @@
         "maybe_exists%0#0"
       ]
     },
-    "304": {
+    "348": {
       "error": "check self.initialized exists",
       "op": "assert // check self.initialized exists",
       "stack_out": [
         "maybe_value%0#0"
       ]
     },
-    "305": {
+    "349": {
       "op": "intc_1 // 1",
       "defined_out": [
         "1",
@@ -1576,7 +1828,7 @@
         "1"
       ]
     },
-    "306": {
+    "350": {
       "op": "==",
       "defined_out": [
         "tmp%0#0"
@@ -1585,12 +1837,12 @@
         "tmp%0#0"
       ]
     },
-    "307": {
+    "351": {
       "error": "Grant not initialized",
       "op": "assert // Grant not initialized",
       "stack_out": []
     },
-    "308": {
+    "352": {
       "op": "txn Sender",
       "defined_out": [
         "tmp%1#0"
@@ -1599,14 +1851,14 @@
         "tmp%1#0"
       ]
     },
-    "310": {
+    "354": {
       "op": "intc_0 // 0",
       "stack_out": [
         "tmp%1#0",
         "0"
       ]
     },
-    "311": {
+    "355": {
       "op": "bytec_1 // \"sponsor\"",
       "defined_out": [
         "\"sponsor\"",
@@ -1619,7 +1871,7 @@
         "\"sponsor\""
       ]
     },
-    "312": {
+    "356": {
       "op": "app_global_get_ex",
       "defined_out": [
         "maybe_exists%1#0",
@@ -1632,7 +1884,7 @@
         "maybe_exists%1#0"
       ]
     },
-    "313": {
+    "357": {
       "error": "check self.sponsor exists",
       "op": "assert // check self.sponsor exists",
       "stack_out": [
@@ -1640,7 +1892,7 @@
         "maybe_value%1#0"
       ]
     },
-    "314": {
+    "358": {
       "op": "==",
       "defined_out": [
         "tmp%2#0"
@@ -1649,18 +1901,18 @@
         "tmp%2#0"
       ]
     },
-    "315": {
+    "359": {
       "error": "Only sponsor can close",
       "op": "assert // Only sponsor can close",
       "stack_out": []
     },
-    "316": {
+    "360": {
       "op": "intc_0 // 0",
       "stack_out": [
         "0"
       ]
     },
-    "317": {
+    "361": {
       "op": "bytec_3 // \"total_locked\"",
       "defined_out": [
         "\"total_locked\"",
@@ -1671,7 +1923,7 @@
         "\"total_locked\""
       ]
     },
-    "318": {
+    "362": {
       "op": "app_global_get_ex",
       "defined_out": [
         "maybe_exists%2#0",
@@ -1682,21 +1934,21 @@
         "maybe_exists%2#0"
       ]
     },
-    "319": {
+    "363": {
       "error": "check self.total_locked exists",
       "op": "assert // check self.total_locked exists",
       "stack_out": [
         "maybe_value%2#0"
       ]
     },
-    "320": {
+    "364": {
       "op": "intc_0 // 0",
       "stack_out": [
         "maybe_value%2#0",
         "0"
       ]
     },
-    "321": {
+    "365": {
       "op": "bytec_2 // \"released\"",
       "defined_out": [
         "\"released\"",
@@ -1709,7 +1961,7 @@
         "\"released\""
       ]
     },
-    "322": {
+    "366": {
       "op": "app_global_get_ex",
       "defined_out": [
         "maybe_exists%3#0",
@@ -1722,7 +1974,7 @@
         "maybe_exists%3#0"
       ]
     },
-    "323": {
+    "367": {
       "error": "check self.released exists",
       "op": "assert // check self.released exists",
       "stack_out": [
@@ -1730,7 +1982,7 @@
         "maybe_value%3#0"
       ]
     },
-    "324": {
+    "368": {
       "op": "-",
       "defined_out": [
         "remaining#0"
@@ -1739,7 +1991,7 @@
         "remaining#0"
       ]
     },
-    "325": {
+    "369": {
       "op": "dup",
       "defined_out": [
         "remaining#0"
@@ -1749,23 +2001,23 @@
         "remaining#0"
       ]
     },
-    "326": {
+    "370": {
       "op": "bz close_grant_after_if_else@4",
       "stack_out": [
         "remaining#0"
       ]
     },
-    "329": {
+    "373": {
       "op": "itxn_begin"
     },
-    "330": {
+    "374": {
       "op": "intc_0 // 0",
       "stack_out": [
         "remaining#0",
         "0"
       ]
     },
-    "331": {
+    "375": {
       "op": "bytec_1 // \"sponsor\"",
       "stack_out": [
         "remaining#0",
@@ -1773,7 +2025,7 @@
         "\"sponsor\""
       ]
     },
-    "332": {
+    "376": {
       "op": "app_global_get_ex",
       "defined_out": [
         "maybe_exists%4#0",
@@ -1786,7 +2038,7 @@
         "maybe_exists%4#0"
       ]
     },
-    "333": {
+    "377": {
       "error": "check self.sponsor exists",
       "op": "assert // check self.sponsor exists",
       "stack_out": [
@@ -1794,7 +2046,7 @@
         "maybe_value%4#0"
       ]
     },
-    "334": {
+    "378": {
       "op": "dig 1",
       "stack_out": [
         "remaining#0",
@@ -1802,20 +2054,20 @@
         "remaining#0"
       ]
     },
-    "336": {
+    "380": {
       "op": "itxn_field Amount",
       "stack_out": [
         "remaining#0",
         "maybe_value%4#0"
       ]
     },
-    "338": {
+    "382": {
       "op": "itxn_field Receiver",
       "stack_out": [
         "remaining#0"
       ]
     },
-    "340": {
+    "384": {
       "op": "intc_1 // pay",
       "defined_out": [
         "pay",
@@ -1826,29 +2078,29 @@
         "pay"
       ]
     },
-    "341": {
+    "385": {
       "op": "itxn_field TypeEnum",
       "stack_out": [
         "remaining#0"
       ]
     },
-    "343": {
+    "387": {
       "op": "intc_0 // 0",
       "stack_out": [
         "remaining#0",
         "0"
       ]
     },
-    "344": {
+    "388": {
       "op": "itxn_field Fee",
       "stack_out": [
         "remaining#0"
       ]
     },
-    "346": {
+    "390": {
       "op": "itxn_submit"
     },
-    "347": {
+    "391": {
       "block": "close_grant_after_if_else@4",
       "stack_in": [
         "remaining#0"
@@ -1862,7 +2114,7 @@
         "\"initialized\""
       ]
     },
-    "348": {
+    "392": {
       "op": "intc_0 // 0",
       "defined_out": [
         "\"initialized\"",
@@ -1874,13 +2126,13 @@
         "0"
       ]
     },
-    "349": {
+    "393": {
       "op": "app_global_put",
       "stack_out": [
         "remaining#0"
       ]
     },
-    "350": {
+    "394": {
       "op": "intc_1 // 1",
       "defined_out": [
         "1"
@@ -1890,13 +2142,13 @@
         "1"
       ]
     },
-    "351": {
+    "395": {
       "op": "return",
       "stack_out": [
         "remaining#0"
       ]
     },
-    "352": {
+    "396": {
       "subroutine": "contract.ChainGrant.get_balance[routing]",
       "params": {},
       "block": "get_balance",
@@ -1909,7 +2161,7 @@
         "0"
       ]
     },
-    "353": {
+    "397": {
       "op": "bytec_3 // \"total_locked\"",
       "defined_out": [
         "\"total_locked\"",
@@ -1920,7 +2172,7 @@
         "\"total_locked\""
       ]
     },
-    "354": {
+    "398": {
       "op": "app_global_get_ex",
       "defined_out": [
         "maybe_exists%0#0",
@@ -1931,21 +2183,21 @@
         "maybe_exists%0#0"
       ]
     },
-    "355": {
+    "399": {
       "error": "check self.total_locked exists",
       "op": "assert // check self.total_locked exists",
       "stack_out": [
         "maybe_value%0#0"
       ]
     },
-    "356": {
+    "400": {
       "op": "intc_0 // 0",
       "stack_out": [
         "maybe_value%0#0",
         "0"
       ]
     },
-    "357": {
+    "401": {
       "op": "bytec_2 // \"released\"",
       "defined_out": [
         "\"released\"",
@@ -1958,7 +2210,7 @@
         "\"released\""
       ]
     },
-    "358": {
+    "402": {
       "op": "app_global_get_ex",
       "defined_out": [
         "maybe_exists%1#0",
@@ -1971,7 +2223,7 @@
         "maybe_exists%1#0"
       ]
     },
-    "359": {
+    "403": {
       "error": "check self.released exists",
       "op": "assert // check self.released exists",
       "stack_out": [
@@ -1979,7 +2231,7 @@
         "maybe_value%1#0"
       ]
     },
-    "360": {
+    "404": {
       "op": "-",
       "defined_out": [
         "tmp%0#1"
@@ -1988,7 +2240,7 @@
         "tmp%0#1"
       ]
     },
-    "361": {
+    "405": {
       "op": "itob",
       "defined_out": [
         "aggregate%val_as_bytes%0#0"
@@ -1997,7 +2249,7 @@
         "aggregate%val_as_bytes%0#0"
       ]
     },
-    "362": {
+    "406": {
       "op": "bytec 5 // 0x151f7c75",
       "defined_out": [
         "0x151f7c75",
@@ -2008,14 +2260,14 @@
         "0x151f7c75"
       ]
     },
-    "364": {
+    "408": {
       "op": "swap",
       "stack_out": [
         "0x151f7c75",
         "aggregate%val_as_bytes%0#0"
       ]
     },
-    "365": {
+    "409": {
       "op": "concat",
       "defined_out": [
         "tmp%1#0"
@@ -2024,11 +2276,11 @@
         "tmp%1#0"
       ]
     },
-    "366": {
+    "410": {
       "op": "log",
       "stack_out": []
     },
-    "367": {
+    "411": {
       "op": "intc_1 // 1",
       "defined_out": [
         "1"
@@ -2037,11 +2289,11 @@
         "1"
       ]
     },
-    "368": {
+    "412": {
       "op": "return",
       "stack_out": []
     },
-    "369": {
+    "413": {
       "subroutine": "contract.ChainGrant.get_student[routing]",
       "params": {},
       "block": "get_student",
@@ -2054,7 +2306,7 @@
         "0"
       ]
     },
-    "370": {
+    "414": {
       "op": "bytec 4 // \"student\"",
       "defined_out": [
         "\"student\"",
@@ -2065,7 +2317,7 @@
         "\"student\""
       ]
     },
-    "372": {
+    "416": {
       "op": "app_global_get_ex",
       "defined_out": [
         "maybe_exists%0#0",
@@ -2076,14 +2328,14 @@
         "maybe_exists%0#0"
       ]
     },
-    "373": {
+    "417": {
       "error": "check self.student exists",
       "op": "assert // check self.student exists",
       "stack_out": [
         "maybe_value%0#0"
       ]
     },
-    "374": {
+    "418": {
       "op": "dup",
       "defined_out": [
         "maybe_value%0#0",
@@ -2094,7 +2346,7 @@
         "maybe_value%0#0 (copy)"
       ]
     },
-    "375": {
+    "419": {
       "op": "len",
       "defined_out": [
         "maybe_value%0#0",
@@ -2105,7 +2357,7 @@
         "tmp%0#1"
       ]
     },
-    "376": {
+    "420": {
       "op": "intc_2 // 32",
       "defined_out": [
         "32",
@@ -2118,7 +2370,7 @@
         "32"
       ]
     },
-    "377": {
+    "421": {
       "op": "==",
       "defined_out": [
         "maybe_value%0#0",
@@ -2129,14 +2381,14 @@
         "tmp%1#1"
       ]
     },
-    "378": {
+    "422": {
       "error": "Address length is 32 bytes",
       "op": "assert // Address length is 32 bytes",
       "stack_out": [
         "maybe_value%0#0"
       ]
     },
-    "379": {
+    "423": {
       "op": "bytec 5 // 0x151f7c75",
       "defined_out": [
         "0x151f7c75",
@@ -2147,14 +2399,14 @@
         "0x151f7c75"
       ]
     },
-    "381": {
+    "425": {
       "op": "swap",
       "stack_out": [
         "0x151f7c75",
         "maybe_value%0#0"
       ]
     },
-    "382": {
+    "426": {
       "op": "concat",
       "defined_out": [
         "tmp%1#0"
@@ -2163,11 +2415,11 @@
         "tmp%1#0"
       ]
     },
-    "383": {
+    "427": {
       "op": "log",
       "stack_out": []
     },
-    "384": {
+    "428": {
       "op": "intc_1 // 1",
       "defined_out": [
         "1"
@@ -2176,11 +2428,11 @@
         "1"
       ]
     },
-    "385": {
+    "429": {
       "op": "return",
       "stack_out": []
     },
-    "386": {
+    "430": {
       "subroutine": "contract.ChainGrant.get_sponsor[routing]",
       "params": {},
       "block": "get_sponsor",
@@ -2193,7 +2445,7 @@
         "0"
       ]
     },
-    "387": {
+    "431": {
       "op": "bytec_1 // \"sponsor\"",
       "defined_out": [
         "\"sponsor\"",
@@ -2204,7 +2456,7 @@
         "\"sponsor\""
       ]
     },
-    "388": {
+    "432": {
       "op": "app_global_get_ex",
       "defined_out": [
         "maybe_exists%0#0",
@@ -2215,14 +2467,14 @@
         "maybe_exists%0#0"
       ]
     },
-    "389": {
+    "433": {
       "error": "check self.sponsor exists",
       "op": "assert // check self.sponsor exists",
       "stack_out": [
         "maybe_value%0#0"
       ]
     },
-    "390": {
+    "434": {
       "op": "dup",
       "defined_out": [
         "maybe_value%0#0",
@@ -2233,7 +2485,7 @@
         "maybe_value%0#0 (copy)"
       ]
     },
-    "391": {
+    "435": {
       "op": "len",
       "defined_out": [
         "maybe_value%0#0",
@@ -2244,7 +2496,7 @@
         "tmp%0#1"
       ]
     },
-    "392": {
+    "436": {
       "op": "intc_2 // 32",
       "defined_out": [
         "32",
@@ -2257,7 +2509,7 @@
         "32"
       ]
     },
-    "393": {
+    "437": {
       "op": "==",
       "defined_out": [
         "maybe_value%0#0",
@@ -2268,14 +2520,14 @@
         "tmp%1#1"
       ]
     },
-    "394": {
+    "438": {
       "error": "Address length is 32 bytes",
       "op": "assert // Address length is 32 bytes",
       "stack_out": [
         "maybe_value%0#0"
       ]
     },
-    "395": {
+    "439": {
       "op": "bytec 5 // 0x151f7c75",
       "defined_out": [
         "0x151f7c75",
@@ -2286,14 +2538,14 @@
         "0x151f7c75"
       ]
     },
-    "397": {
+    "441": {
       "op": "swap",
       "stack_out": [
         "0x151f7c75",
         "maybe_value%0#0"
       ]
     },
-    "398": {
+    "442": {
       "op": "concat",
       "defined_out": [
         "tmp%1#0"
@@ -2302,11 +2554,11 @@
         "tmp%1#0"
       ]
     },
-    "399": {
+    "443": {
       "op": "log",
       "stack_out": []
     },
-    "400": {
+    "444": {
       "op": "intc_1 // 1",
       "defined_out": [
         "1"
@@ -2315,7 +2567,7 @@
         "1"
       ]
     },
-    "401": {
+    "445": {
       "op": "return",
       "stack_out": []
     }

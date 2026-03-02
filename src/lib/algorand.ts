@@ -57,8 +57,8 @@ export const formatAddress = (address: string) => {
  * App ID of the deployed ChainGrant escrow contract on Algorand Testnet.
  * Set this after running: smart-contract/deploy.py
  */
-export const CHAIN_GRANT_APP_ID = 756430139; // Deployed on Algorand Testnet
-export const CHAIN_GRANT_APP_ADDR = 'QHWUJ624N2ZRRCIMQVF2NPTMJOIUSCAUXZS6FLA5QT6QBB7WTMO7IEDYCA';
+export const CHAIN_GRANT_APP_ID = 756431408; // Deployed on Algorand Testnet
+export const CHAIN_GRANT_APP_ADDR = 'M5MWGNJK7ZRG5K56FOTIKGCOZ4U7J2JNB3C6B6GDAPXAEOPXEXFWUBVZMA';
 
 /**
  * Build the grouped transactions to create a grant on-chain.

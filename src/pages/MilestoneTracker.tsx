@@ -133,15 +133,16 @@ export default function MilestoneTracker() {
       // Convert INR to microALGO (1 INR = 1000 microALGO for testnet demo)
       const microAlgo = BigInt(Math.round(milestone.amount * 1000));
 
-      const methodSelector = algosdk.ABIMethod.fromSignature('release_funds(uint64)void').getSelector();
+      const methodSelector = algosdk.ABIMethod.fromSignature('release_funds(uint64,string)void').getSelector();
       const amountArg = algosdk.ABIUintType.from('uint64').encode(microAlgo);
+      const proofArg = algosdk.ABIStringType.from('string').encode(milestone.proofHash || 'No Proof Hash');
 
       const txn = algosdk.makeApplicationCallTxnFromObject({
         sender: address,
         suggestedParams: { ...params, fee: 2000, flatFee: true },
         appIndex: CHAIN_GRANT_APP_ID,
         onComplete: algosdk.OnApplicationComplete.NoOpOC,
-        appArgs: [methodSelector, amountArg],
+        appArgs: [methodSelector, amountArg, proofArg],
         accounts: [grant.studentAddress],
         note: new TextEncoder().encode(`ChainGrant Release: ${milestone.name}`),
       });
@@ -211,6 +212,17 @@ export default function MilestoneTracker() {
                 }`}>
                 {grant.status}
               </span>
+              {grant.fundingTxId && (
+                <a
+                  href={`https://lora.algokit.io/testnet/transaction/${grant.fundingTxId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-4 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-900 transition-colors rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-200 shadow-sm"
+                >
+                  <ExternalLink size={12} />
+                  Funding Tx: {grant.fundingTxId.substring(0, 10)}...
+                </a>
+              )}
             </div>
             <h1 className="text-5xl font-black text-blue-900 tracking-tighter mb-6">{grant.title}</h1>
             <p className="text-gray-500 text-xl font-medium leading-relaxed">{grant.description}</p>
@@ -389,7 +401,28 @@ export default function MilestoneTracker() {
               </div>
             </div>
 
+            {/* Smart Contract Proof for Judges */}
+            <div className="mt-8 pt-8 border-t border-gray-100 space-y-4">
+              <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                <ShieldCheck size={14} className="text-blue-600" />
+                Live Smart Contract
+              </h3>
+              <a
+                href={`https://lora.algokit.io/testnet/application/${CHAIN_GRANT_APP_ID}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:bg-blue-50 hover:border-blue-100 transition-colors group"
+              >
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs font-bold text-gray-500 group-hover:text-blue-600 transition-colors">App ID</span>
+                  <ExternalLink size={14} className="text-gray-300 group-hover:text-blue-600 transition-colors" />
+                </div>
+                <div className="text-sm font-black font-mono text-blue-900">{CHAIN_GRANT_APP_ID}</div>
+              </a>
+            </div>
+
             <Link
+
               to={`/grants/${grant.id}/spend`}
               className="w-full mt-10 flex items-center justify-center gap-3 py-5 bg-blue-50 text-blue-900 rounded-3xl font-black text-xs uppercase tracking-widest hover:bg-blue-900 hover:text-white transition-all shadow-sm group"
             >

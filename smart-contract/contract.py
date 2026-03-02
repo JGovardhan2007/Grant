@@ -22,6 +22,7 @@ from algopy import (
     gtxn,
     arc4,
     Bytes,
+    String,
 )
 
 
@@ -33,6 +34,8 @@ class ChainGrant(ARC4Contract):
         self.student = GlobalState(Account, key="student", description="Grant student address")
         self.total_locked = GlobalState(UInt64, key="total_locked", description="Total microALGO locked")
         self.released = GlobalState(UInt64, key="released", description="MicroALGO released so far")
+        # The most recent IPFS/Keccak256 proof hash submitted by the student and approved
+        self.latest_proof_hash = GlobalState(String, key="latest_proof_hash", description="Most recent proof hash")
         self.initialized = GlobalState(UInt64, key="initialized", description="1 when grant is active")
 
     # ------------------------------------------------------------------ #
@@ -73,6 +76,7 @@ class ChainGrant(ARC4Contract):
         self.student.value = Account(student.bytes)
         self.total_locked.value = payment.amount
         self.released.value = UInt64(0)
+        self.latest_proof_hash.value = String("")
         self.initialized.value = UInt64(1)
 
     # ------------------------------------------------------------------ #
@@ -80,26 +84,27 @@ class ChainGrant(ARC4Contract):
     # ------------------------------------------------------------------ #
 
     @arc4.abimethod
-    def release_funds(self, amount_micro_algo: arc4.UInt64) -> None:
+    def release_funds(self, release_amount: arc4.UInt64, proof_hash: arc4.String) -> None:
         """
-        Release a specific microALGO amount from escrow to the student.
-        Only callable by the sponsor.
+        Allows the sponsor to release a specific amount to the student.
+        Saves the proof hash to global state as permanent on-chain evidence.
         """
         assert self.initialized.value == UInt64(1), "Grant not initialized"
         assert Txn.sender == self.sponsor.value, "Only sponsor can release funds"
 
-        release_amount = amount_micro_algo.native
+        amount_to_release = release_amount.native
         remaining = self.total_locked.value - self.released.value
-        assert release_amount <= remaining, "Not enough locked funds"
-        assert release_amount > UInt64(0), "Amount must be positive"
+        assert amount_to_release <= remaining, "Not enough locked funds"
+        assert amount_to_release > UInt64(0), "Amount must be positive"
 
         itxn.Payment(
             receiver=self.student.value,
-            amount=release_amount,
+            amount=amount_to_release,
             fee=0,
         ).submit()
 
-        self.released.value = self.released.value + release_amount
+        self.released.value = self.released.value + amount_to_release
+        self.latest_proof_hash.value = proof_hash.native
 
     # ------------------------------------------------------------------ #
     # Request changes (on-chain record, no fund movement)                  #

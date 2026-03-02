@@ -100,6 +100,17 @@ export default function TransparencyWall() {
                             }`}>
                             {grant.status}
                           </span>
+                          {grant.fundingTxId && (
+                            <a
+                              href={`https://lora.algokit.io/testnet/transaction/${grant.fundingTxId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors rounded-full text-[9px] font-black uppercase tracking-widest border border-indigo-200"
+                            >
+                              <ExternalLink size={10} />
+                              Verified on Algorand
+                            </a>
+                          )}
                         </div>
                         <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-xs font-bold text-gray-400">
                           <span className="flex items-center gap-1.5">
