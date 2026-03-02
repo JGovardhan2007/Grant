@@ -9,7 +9,8 @@ import {
   ArrowLeft,
   ShieldCheck,
   FileText,
-  Loader2
+  Loader2,
+  Trash2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'motion/react';
@@ -188,6 +189,44 @@ export default function MilestoneTracker() {
     } catch (error) {
       console.error('Fund release failed:', error);
       alert(`Transaction failed. Check console for details.`);
+    } finally {
+      setReleasing(null);
+    }
+  };
+
+  const handleCloseGrant = async () => {
+    if (!address) {
+      alert('Please connect your Algorand wallet first!');
+      return;
+    }
+    if (!window.confirm("Are you sure you want to close this grant? Any remaining funds will be refunded to your wallet and the contract state will reset.")) return;
+
+    setReleasing('closing');
+    try {
+      const params = await algodClient.getTransactionParams().do();
+      const methodSelector = algosdk.ABIMethod.fromSignature('close_grant()void').getSelector();
+
+      const txn = algosdk.makeApplicationCallTxnFromObject({
+        sender: address,
+        suggestedParams: { ...params, fee: 2000, flatFee: true },
+        appIndex: CHAIN_GRANT_APP_ID,
+        onComplete: algosdk.OnApplicationComplete.NoOpOC,
+        appArgs: [methodSelector],
+      });
+
+      const signedTxns = await signTransaction([txn]);
+      const sendResult = await algodClient.sendRawTransaction(signedTxns).do();
+
+      await updateDoc(doc(db, 'grants', grant.id), {
+        status: 'Closed',
+        closingTxId: sendResult.txid
+      });
+
+      alert(`Grant successfully closed. Remaining ALGO refunded to your wallet!`);
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Closing grant failed:', error);
+      alert(`Transaction failed: ${error.message}`);
     } finally {
       setReleasing(null);
     }
@@ -440,13 +479,26 @@ export default function MilestoneTracker() {
             </div>
 
             <Link
-
               to={`/grants/${grant.id}/spend`}
               className="w-full mt-10 flex items-center justify-center gap-3 py-5 bg-blue-50 text-blue-900 rounded-3xl font-black text-xs uppercase tracking-widest hover:bg-blue-900 hover:text-white transition-all shadow-sm group"
             >
               <FileText size={18} className="transition-transform group-hover:scale-110" />
               Audit Transaction Wall
             </Link>
+
+            {(user as any)?.role === 'Sponsor' && grant.status === 'Active' && (
+              <button
+                onClick={handleCloseGrant}
+                disabled={releasing === 'closing'}
+                className="w-full mt-4 flex items-center justify-center gap-3 py-5 bg-red-50 text-red-600 rounded-3xl font-black text-xs uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all shadow-sm group hover:shadow-red-500/20"
+              >
+                {releasing === 'closing' ? (
+                  <><Loader2 className="animate-spin" size={18} /> Closing...</>
+                ) : (
+                  <><Trash2 size={18} className="transition-transform group-hover:scale-110" /> Close Grant & Refund</>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>
