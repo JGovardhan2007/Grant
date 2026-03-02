@@ -130,8 +130,26 @@ export default function MilestoneTracker() {
       // 1. Build ABI call to release_funds on the smart contract
       const params = await algodClient.getTransactionParams().do();
 
+      // ── PRE-FLIGHT: check sponsor has enough ALGO for fees + min balance ──
+      const accountInfo = await algodClient.accountInformation(address).do();
+      const balance = BigInt(accountInfo.amount);
+      const MIN_BALANCE = 100_000n;
+      const FEE = 2_000n;
+      if (balance < MIN_BALANCE + FEE) {
+        const needed = Number(MIN_BALANCE + FEE - balance) / 1_000_000;
+        alert(
+          `❌ Sponsor wallet has insufficient ALGO!\n\n` +
+          `Balance: ${Number(balance) / 1_000_000} ALGO\n` +
+          `Minimum needed: ${Number(MIN_BALANCE + FEE) / 1_000_000} ALGO\n\n` +
+          `Top up your wallet at:\nhttps://bank.testnet.algorand.network\n(need ~${needed.toFixed(3)} more ALGO)`
+        );
+        setReleasing(null);
+        return;
+      }
+
       // Convert INR to microALGO (1 INR = 1000 microALGO for testnet demo)
       const microAlgo = BigInt(Math.round(milestone.amount * 1000));
+
 
       const methodSelector = algosdk.ABIMethod.fromSignature('release_funds(uint64,string)void').getSelector();
       const amountArg = algosdk.ABIUintType.from('uint64').encode(microAlgo);
