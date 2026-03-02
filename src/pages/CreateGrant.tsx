@@ -1,15 +1,23 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Trash2, Shield, Lock, IndianRupee, Users } from 'lucide-react';
+import { Plus, Trash2, Shield, Lock, IndianRupee, Users, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 import { useAuth } from '../context/AuthContext';
 import { sendPayment, algodClient } from '../lib/algorand';
 
 export default function CreateGrant() {
   const navigate = useNavigate();
-  const { address, signTransaction } = useAuth();
+  const { address, signTransaction, user } = useAuth();
+
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [totalAmount, setTotalAmount] = useState('');
+  const [studentEmail, setStudentEmail] = useState('');
   const [milestones, setMilestones] = useState([{ name: '', amount: '' }]);
+  const [loading, setLoading] = useState(false);
 
   const addMilestone = () => {
     setMilestones([...milestones, { name: '', amount: '' }]);
@@ -19,76 +27,131 @@ export default function CreateGrant() {
     setMilestones(milestones.filter((_, i) => i !== index));
   };
 
+  const updateMilestone = (index: number, field: string, value: string) => {
+    const newMilestones = [...milestones];
+    (newMilestones[index] as any)[field] = value;
+    setMilestones(newMilestones);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!address) {
-      alert('Please connect your wallet first!');
+      alert('Please connect your Algorand wallet first!');
       return;
     }
 
+    setLoading(true);
     try {
-      // For demo, we send a small amount to a placeholder address or back to self
-      const txn = await sendPayment(address, address, 0.1, 'ChainGrant: New Grant Creation');
+      // 1. Lock Funds on Algorand (Experimental/Demo amount)
+      const txn = await sendPayment(address as string, address as string, 0.1, `ChainGrant: ${title}`);
+      const txId = txn.txID();
       const signedTxns = await signTransaction([txn]);
       await algodClient.sendRawTransaction(signedTxns).do();
 
-      alert('Success! Funds locked on Algorand Testnet.');
+      // 2. Save Metadata to Firestore
+      await addDoc(collection(db, 'grants'), {
+        title,
+        description,
+        totalAmount: Number(totalAmount),
+        studentEmail,
+        sponsorEmail: user?.email,
+        sponsorAddress: address,
+        fundingTxId: txId,
+        status: 'Active',
+        createdAt: new Date().toISOString(),
+        milestones: milestones.map((m, i) => ({
+          id: `m${i + 1}`,
+          name: m.name,
+          amount: Number(m.amount),
+          status: 'Not Started',
+          released: false,
+          proofHash: null
+        }))
+      });
+
+      alert('Success! Grant created and funds locked on Algorand.');
       navigate('/dashboard');
     } catch (error) {
       console.error('Grant creation failed:', error);
-      alert('Transaction failed. Check console for details.');
+      alert('Creation failed. Make sure you signed the transaction and try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-8">
-      <header className="mb-10">
-        <h1 className="text-4xl font-black text-blue-900 tracking-tight mb-2">Create New Grant</h1>
-        <p className="text-gray-500 text-lg font-medium">Define your project goals and lock funds in a secure smart contract.</p>
+    <div className="max-w-4xl mx-auto py-8 mb-20 animate-in fade-in slide-in-from-bottom-5 duration-700">
+      <header className="mb-12">
+        <h1 className="text-5xl font-black text-blue-900 tracking-tighter mb-4">Create New Grant</h1>
+        <p className="text-gray-500 text-xl font-medium max-w-2xl">
+          Define your project goals, assign a student, and lock funds in a transparent smart contract.
+        </p>
       </header>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="bg-white p-8 rounded-[2rem] border border-blue-100 shadow-xl shadow-blue-50">
-          <h2 className="text-xl font-bold text-blue-900 mb-6 flex items-center gap-2">
-            <Shield size={20} className="text-blue-600" />
-            Basic Information
+      <form onSubmit={handleSubmit} className="space-y-10">
+        {/* Basic Info */}
+        <div className="bg-white p-10 rounded-[3rem] border border-blue-50 shadow-2xl shadow-blue-100/20">
+          <h2 className="text-2xl font-black text-blue-900 mb-8 flex items-center gap-3">
+            <Shield size={24} className="text-blue-600" />
+            Project Fundamentals
           </h2>
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Grant Title</label>
-              <input
-                type="text"
-                placeholder="e.g. Web3 Research Fellowship"
-                className="w-full px-5 py-4 bg-blue-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-900 transition-all font-medium"
-                required
-              />
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Grant Title</label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g. Algorand Research Fellowship"
+                  className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-900 transition-all font-bold text-blue-900"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Student Email</label>
+                <input
+                  type="email"
+                  value={studentEmail}
+                  onChange={(e) => setStudentEmail(e.target.value)}
+                  placeholder="student@university.edu"
+                  className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-900 transition-all font-bold text-blue-900"
+                  required
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Description</label>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Project Description</label>
               <textarea
-                placeholder="Describe the goals and requirements of this grant..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Describe the research goals and expected outcomes..."
                 rows={4}
-                className="w-full px-5 py-4 bg-blue-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-900 transition-all font-medium"
+                className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-900 transition-all font-bold text-blue-900 resize-none"
                 required
               ></textarea>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Total Amount (₹)</label>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Total Grant Pool (₹)</label>
                 <div className="relative">
-                  <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <IndianRupee className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                   <input
                     type="number"
-                    placeholder="50000"
-                    className="w-full pl-12 pr-5 py-4 bg-blue-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-900 transition-all font-medium"
+                    value={totalAmount}
+                    onChange={(e) => setTotalAmount(e.target.value)}
+                    placeholder="100000"
+                    className="w-full pl-14 pr-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-900 transition-all font-bold text-blue-900"
                     required
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Co-Sponsors</label>
-                <button type="button" className="w-full flex items-center justify-center gap-2 px-5 py-4 bg-white border-2 border-dashed border-blue-200 text-blue-600 rounded-2xl font-bold hover:bg-blue-50 transition-all">
-                  <Users size={18} />
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Collaboration</label>
+                <button type="button" className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-white border-2 border-dashed border-gray-100 text-gray-400 rounded-2xl font-bold hover:bg-blue-50 hover:text-blue-900 hover:border-blue-200 transition-all">
+                  <Users size={20} />
                   Add Co-Sponsor
                 </button>
               </div>
@@ -96,23 +159,24 @@ export default function CreateGrant() {
           </div>
         </div>
 
-        <div className="bg-white p-8 rounded-[2rem] border border-blue-100 shadow-xl shadow-blue-50">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-blue-900 flex items-center gap-2">
-              <Lock size={20} className="text-blue-600" />
-              Milestone Breakdown
+        {/* Milestones */}
+        <div className="bg-white p-10 rounded-[3rem] border border-blue-50 shadow-2xl shadow-blue-100/20">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-2xl font-black text-blue-900 flex items-center gap-3">
+              <Lock size={24} className="text-blue-600" />
+              Strategic Breakdown
             </h2>
             <button
               type="button"
               onClick={addMilestone}
-              className="flex items-center gap-1 text-sm font-bold text-blue-600 hover:text-blue-800"
+              className="flex items-center gap-1 text-sm font-black text-blue-600 hover:text-blue-900 transition-colors"
             >
-              <Plus size={16} />
+              <Plus size={18} />
               Add Milestone
             </button>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             {milestones.map((milestone, index) => (
               <motion.div
                 key={index}
@@ -121,20 +185,24 @@ export default function CreateGrant() {
                 className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end"
               >
                 <div className="md:col-span-7">
-                  <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">Milestone Name</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block ml-1">Objective</label>
                   <input
                     type="text"
-                    placeholder={`Milestone ${index + 1}`}
-                    className="w-full px-4 py-3 bg-blue-50 border-none rounded-xl focus:ring-2 focus:ring-blue-900 transition-all font-medium"
+                    value={milestone.name}
+                    onChange={(e) => updateMilestone(index, 'name', e.target.value)}
+                    placeholder={`Milestone ${index + 1} Title`}
+                    className="w-full px-5 py-4 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-900 transition-all font-bold text-blue-900"
                     required
                   />
                 </div>
                 <div className="md:col-span-4">
-                  <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">Amount (₹)</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block ml-1">Allocation (₹)</label>
                   <input
                     type="number"
-                    placeholder="10000"
-                    className="w-full px-4 py-3 bg-blue-50 border-none rounded-xl focus:ring-2 focus:ring-blue-900 transition-all font-medium"
+                    value={milestone.amount}
+                    onChange={(e) => updateMilestone(index, 'amount', e.target.value)}
+                    placeholder="25000"
+                    className="w-full px-5 py-4 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-900 transition-all font-bold text-blue-900"
                     required
                   />
                 </div>
@@ -142,10 +210,10 @@ export default function CreateGrant() {
                   <button
                     type="button"
                     onClick={() => removeMilestone(index)}
-                    className="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                    className="p-4 text-gray-300 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
                     disabled={milestones.length === 1}
                   >
-                    <Trash2 size={20} />
+                    <Trash2 size={24} />
                   </button>
                 </div>
               </motion.div>
@@ -155,9 +223,20 @@ export default function CreateGrant() {
 
         <button
           type="submit"
-          className="w-full py-5 bg-blue-900 text-white rounded-[2rem] font-black text-xl shadow-2xl shadow-blue-200 hover:bg-blue-800 transition-all transform hover:-translate-y-1"
+          disabled={loading}
+          className="w-full py-6 bg-blue-900 text-white rounded-[2.5rem] font-black text-2xl shadow-3xl shadow-blue-200/50 hover:bg-black transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3 disabled:opacity-70"
         >
-          Lock Funds on Algorand
+          {loading ? (
+            <>
+              <Loader2 className="animate-spin" size={28} />
+              Processing Blockchain Tx...
+            </>
+          ) : (
+            <>
+              Authorize & Lock Funds
+              <Shield size={24} />
+            </>
+          )}
         </button>
       </form>
     </div>

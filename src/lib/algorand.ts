@@ -10,11 +10,11 @@ export const algodClient = new algosdk.Algodv2(algodToken, algodServer, algodPor
 /**
  * Sends a payment transaction on Algorand Testnet.
  */
-export const sendPayment = async (from: string, to: string, amount: number, note?: string) => {
+export const sendPayment = async (sender: string, receiver: string, amount: number, note?: string) => {
   const params = await algodClient.getTransactionParams().do();
   const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: from as string,
-    to: to as string,
+    sender,
+    receiver,
     amount: algosdk.algosToMicroalgos(amount),
     note: note ? new TextEncoder().encode(note) : undefined,
     suggestedParams: params,
@@ -26,10 +26,10 @@ export const sendPayment = async (from: string, to: string, amount: number, note
 /**
  * Mints a non-transferable NFT badge (ASA).
  */
-export const mintBadge = async (from: string, assetName: string, unitName: string, url: string) => {
+export const mintBadge = async (sender: string, assetName: string, unitName: string, url: string) => {
   const params = await algodClient.getTransactionParams().do();
   const txn = algosdk.makeAssetCreateTxnWithSuggestedParamsFromObject({
-    from: from as string,
+    sender,
     assetName,
     unitName,
     assetURL: url,

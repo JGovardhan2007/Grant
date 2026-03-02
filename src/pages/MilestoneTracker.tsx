@@ -1,220 +1,375 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   CheckCircle2,
   Clock,
-  AlertCircle,
   ExternalLink,
   Upload,
   Check,
   ArrowLeft,
   ShieldCheck,
-  FileText
+  FileText,
+  Loader2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { GRANTS } from '../data/mockData';
 import { motion } from 'motion/react';
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 import { sendPayment, algodClient } from '../lib/algorand';
 import { generateHash } from '../lib/hashing';
 
 export default function MilestoneTracker() {
   const { id } = useParams();
-  const { role, address, signTransaction } = useAuth();
-  const grant = GRANTS.find(g => g.id === id) || GRANTS[0];
+  const { role, address, signTransaction, user } = useAuth();
+  const [grant, setGrant] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [releasing, setReleasing] = useState<string | null>(null);
+  const [showProofModal, setShowProofModal] = useState(false);
+  const [selectedMilestoneId, setSelectedMilestoneId] = useState<string | null>(null);
+  const [proofDescription, setProofDescription] = useState('');
 
-  const handleUploadProof = (milestoneId: string) => {
-    setUploading(milestoneId);
-    setTimeout(() => {
+  useEffect(() => {
+    if (!id) return;
+    const unsubscribe = onSnapshot(doc(db, 'grants', id), (docSnap) => {
+      if (docSnap.exists()) {
+        setGrant({ id: docSnap.id, ...docSnap.data() });
+      }
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, [id]);
+
+  const handleUploadProof = async () => {
+    if (!grant || !address || !selectedMilestoneId || !proofDescription) {
+      alert('Please fill in all details and connect your wallet!');
+      return;
+    }
+
+    setUploading(selectedMilestoneId);
+    setShowProofModal(false);
+
+    try {
+      // 1. Generate SHA-256 Hash from user description (kept for audit trail)
+      const realHash = generateHash(proofDescription);
+
+      // 2. Update Firestore with Hash and Description (Skipping 0-ALGO txn as per user request)
+      const updatedMilestones = grant.milestones.map((m: any) =>
+        m.id === selectedMilestoneId
+          ? {
+            ...m,
+            status: 'Pending Approval',
+            proofHash: `0x${realHash.substring(0, 32)}...`,
+            proofDescription
+          }
+          : m
+      );
+
+      await updateDoc(doc(db, 'grants', grant.id), {
+        milestones: updatedMilestones
+      });
+
+      alert(`Success! Work submitted for approval.`);
+      setProofDescription('');
+      setSelectedMilestoneId(null);
+    } catch (err: any) {
+      console.error('Proof submission failed:', err);
+      alert(`Submission failed: ${err.message}`);
+    } finally {
       setUploading(null);
-      const realHash = generateHash(`proof-${milestoneId}-${Date.now()}`);
-      alert(`Proof uploaded! SHA-256 Hash generated: 0x${realHash.substring(0, 12)}...`);
-    }, 1500);
+    }
   };
 
   const handleReleaseFunds = async (milestone: any) => {
     if (!address) {
-      alert('Please connect your wallet first!');
+      alert('Please connect your Algorand wallet first!');
       return;
     }
 
+    setReleasing(milestone.id);
     try {
-      // Simulate releasing the specific milestone amount back to a recipient or self
+      // 1. Transaction on Algorand
       const txn = await sendPayment(address, address, 0.01, `ChainGrant Release: ${milestone.name}`);
       const signedTxns = await signTransaction([txn]);
       await algodClient.sendRawTransaction(signedTxns).do();
 
+      // 2. Update Firestore
+      const updatedMilestones = grant.milestones.map((m: any) =>
+        m.id === milestone.id
+          ? { ...m, status: 'Completed', released: true }
+          : m
+      );
+
+      // Check if all milestones are completed
+      const allDone = updatedMilestones.every((m: any) => m.status === 'Completed');
+
+      await updateDoc(doc(db, 'grants', grant.id), {
+        milestones: updatedMilestones,
+        status: allDone ? 'Completed' : 'Active'
+      });
+
       alert(`Success! ₹${milestone.amount.toLocaleString()} released on Algorand.`);
     } catch (error) {
       console.error('Fund release failed:', error);
-      alert('Transaction failed. Make sure you are the Sponsor of this grant.');
+      alert(`Transaction failed. Check console for details.`);
+    } finally {
+      setReleasing(null);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center">
+        <Loader2 className="animate-spin text-blue-900 mb-4" size={40} />
+        <p className="text-blue-900 font-bold">Fetching grant details...</p>
+      </div>
+    );
+  }
+
+  if (!grant) {
+    return (
+      <div className="text-center py-20">
+        <h2 className="text-2xl font-bold text-blue-900">Grant not found</h2>
+        <Link to="/dashboard" className="text-blue-600 font-bold hover:underline mt-4 inline-block">Return to Dashboard</Link>
+      </div>
+    );
+  }
+
+  const releasedAmount = grant.milestones.filter((m: any) => m.released).reduce((acc: number, m: any) => acc + m.amount, 0);
+  const remainingAmount = grant.totalAmount - releasedAmount;
+
   return (
-    <div className="max-w-5xl mx-auto py-8">
-      <Link to="/dashboard" className="flex items-center gap-2 text-blue-600 font-bold mb-8 hover:translate-x-1 transition-transform inline-flex">
-        <ArrowLeft size={18} />
+    <div className="max-w-5xl mx-auto py-8 mb-20 animate-in fade-in duration-700">
+      <Link to="/dashboard" className="flex items-center gap-2 text-blue-600 font-black mb-10 hover:translate-x-[-4px] transition-transform inline-flex uppercase tracking-widest text-xs">
+        <ArrowLeft size={16} />
         Back to Dashboard
       </Link>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="lg:col-span-2 space-y-12">
           <header>
-            <div className="flex items-center gap-3 mb-4">
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold uppercase tracking-widest">Grant ID: #{grant.id}</span>
-              <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold uppercase tracking-widest">{grant.status}</span>
+            <div className="flex items-center gap-3 mb-6">
+              <span className="px-4 py-1.5 bg-blue-100 text-blue-900 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-200 shadow-sm">ID: #{grant.id.substring(0, 6)}</span>
+              <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm ${grant.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-blue-50 text-blue-700 border-blue-100'
+                }`}>
+                {grant.status}
+              </span>
             </div>
-            <h1 className="text-4xl font-black text-blue-900 tracking-tight mb-4">{grant.title}</h1>
-            <p className="text-gray-600 text-lg leading-relaxed font-medium">{grant.description}</p>
+            <h1 className="text-5xl font-black text-blue-900 tracking-tighter mb-6">{grant.title}</h1>
+            <p className="text-gray-500 text-xl font-medium leading-relaxed">{grant.description}</p>
           </header>
 
-          <section className="bg-white p-8 rounded-[2rem] border border-blue-100 shadow-xl shadow-blue-50">
-            <h2 className="text-xl font-black text-blue-900 mb-4 flex items-center gap-2">
-              <FileText size={20} className="text-blue-600" />
-              Project Details
+          <section className="bg-white p-10 rounded-[3rem] border border-blue-50 shadow-2xl shadow-blue-100/20">
+            <h2 className="text-2xl font-black text-blue-900 mb-8 flex items-center gap-3">
+              <FileText size={24} className="text-blue-600" />
+              Strategic Roadmap
             </h2>
+
             <div className="space-y-6">
-              <div>
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Full Description</h3>
-                <p className="text-gray-600 font-medium leading-relaxed">
-                  {grant.description}
-                </p>
-              </div>
-              {grant.coSponsors && grant.coSponsors.length > 0 && (
-                <div>
-                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Co-Sponsors</h3>
-                  <div className="flex flex-wrap gap-3">
-                    {grant.coSponsors.map((coSponsor: string) => (
-                      <div key={coSponsor} className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-900 rounded-xl text-sm font-bold border border-blue-100">
-                        <ShieldCheck size={14} className="text-blue-600" />
-                        {coSponsor}
+              {grant.milestones.map((milestone: any, index: number) => (
+                <motion.div
+                  key={milestone.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`p-6 rounded-3xl border transition-all ${milestone.status === 'Completed'
+                    ? 'bg-emerald-50/50 border-emerald-100'
+                    : milestone.status === 'Pending Approval'
+                      ? 'bg-amber-50/50 border-amber-100'
+                      : 'bg-gray-50/30 border-gray-100'
+                    }`}
+                >
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-sm ${milestone.status === 'Completed' ? 'bg-emerald-500 text-white' : 'bg-white text-blue-900 border border-gray-100'
+                        }`}>
+                        {milestone.status === 'Completed' ? <Check size={24} /> : index + 1}
                       </div>
-                    ))}
+                      <div>
+                        <h3 className="text-lg font-black text-blue-900">{milestone.name}</h3>
+                        <p className="text-sm font-bold text-gray-400">Allocation: <span className="text-blue-600">₹{milestone.amount.toLocaleString()}</span></p>
+                      </div>
+                    </div>
+                    <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${milestone.status === 'Completed' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' :
+                      milestone.status === 'Pending Approval' ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-white text-gray-400 border-gray-100'
+                      }`}>
+                      {milestone.status}
+                    </div>
                   </div>
-                </div>
-              )}
+
+                  {milestone.proofDescription && (
+                    <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 mb-4">
+                      <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1">
+                        <FileText size={12} />
+                        Submitted Work
+                      </p>
+                      <p className="text-sm font-medium text-blue-900 whitespace-pre-wrap">{milestone.proofDescription}</p>
+                    </div>
+                  )}
+
+                  {milestone.proofHash && (
+                    <div className="bg-white/80 backdrop-blur-sm border border-gray-100 rounded-2xl p-4 mb-6 flex items-center justify-between group">
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <ShieldCheck size={18} className="text-blue-600" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Anchored Proof Hash</p>
+                          <p className="text-xs font-mono font-bold text-blue-900 truncate">{milestone.proofHash}</p>
+                          {milestone.txId && (
+                            <p className="text-[8px] font-bold text-emerald-600 uppercase tracking-tighter mt-0.5">
+                              On-Chain: {milestone.txId.substring(0, 12)}...
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      {milestone.txId && (
+                        <a
+                          href={`https://lora.algokit.io/testnet/transaction/${milestone.txId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                        >
+                          <ExternalLink size={16} className="text-gray-300 group-hover:text-blue-600 transition-colors" />
+                        </a>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex justify-end items-center gap-4">
+                    {role === 'Student' && milestone.status === 'Not Started' && (
+                      <button
+                        onClick={() => {
+                          setSelectedMilestoneId(milestone.id);
+                          setShowProofModal(true);
+                        }}
+                        disabled={uploading === milestone.id}
+                        className="flex items-center gap-2 px-6 py-3 bg-blue-900 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-black transition-all disabled:opacity-50"
+                      >
+                        {uploading === milestone.id ? (
+                          <Loader2 className="animate-spin" size={18} />
+                        ) : (
+                          <>
+                            <Upload size={18} />
+                            Submit Work Proof
+                          </>
+                        )}
+                      </button>
+                    )}
+
+                    {milestone.status === 'Pending Approval' && role === 'Student' && (
+                      <div className="flex items-center gap-2 text-amber-600 font-bold bg-amber-50 px-4 py-2 rounded-xl border border-amber-100 animate-pulse">
+                        <Clock size={16} />
+                        <span className="text-xs uppercase tracking-wider">Awaiting Verification</span>
+                      </div>
+                    )}
+
+                    {role === 'Sponsor' && milestone.status === 'Pending Approval' && (
+                      <button
+                        onClick={() => handleReleaseFunds(milestone)}
+                        disabled={releasing === milestone.id}
+                        className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-2xl font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50"
+                      >
+                        {releasing === milestone.id ? (
+                          <Loader2 className="animate-spin" size={18} />
+                        ) : (
+                          <CheckCircle2 size={18} />
+                        )}
+                        {releasing === milestone.id ? 'Releasing...' : `Approve & Pay (₹${milestone.amount.toLocaleString()})`}
+                      </button>
+                    )}
+
+                    {milestone.released && (
+                      <div className="flex items-center gap-3 px-5 py-2.5 bg-emerald-50 text-emerald-700 rounded-2xl font-black text-xs uppercase tracking-[0.1em] border border-emerald-100 shadow-sm shadow-emerald-50">
+                        <CheckCircle2 size={18} />
+                        Verified & Released
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </section>
-
-          <div className="space-y-4">
-            <h2 className="text-2xl font-black text-blue-900 tracking-tight mb-6">Milestone Roadmap</h2>
-            {grant.milestones.map((milestone, index) => (
-              <motion.div
-                key={milestone.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className={`bg-white p-6 rounded-3xl border ${milestone.status === 'Completed' ? 'border-emerald-100 bg-emerald-50/30' : 'border-blue-100'} shadow-sm`}
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${milestone.status === 'Completed' ? 'bg-emerald-500 text-white' : 'bg-blue-100 text-blue-900'
-                      }`}>
-                      {milestone.status === 'Completed' ? <Check size={20} /> : index + 1}
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-blue-900">{milestone.name}</h3>
-                      <p className="text-sm font-bold text-blue-600">₹{milestone.amount.toLocaleString()}</p>
-                    </div>
-                  </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${milestone.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' :
-                    milestone.status === 'Pending Approval' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-500'
-                    }`}>
-                    {milestone.status}
-                  </div>
-                </div>
-
-                {milestone.proofHash && (
-                  <div className="bg-white border border-blue-50 rounded-xl p-3 mb-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck size={16} className="text-blue-600" />
-                      <span className="text-xs font-mono text-gray-500">Proof Hash: {milestone.proofHash}</span>
-                    </div>
-                    <button className="text-blue-600 hover:text-blue-800">
-                      <ExternalLink size={14} />
-                    </button>
-                  </div>
-                )}
-
-                <div className="flex justify-end gap-3">
-                  {role === 'Student' && milestone.status === 'Not Started' && (
-                    <button
-                      onClick={() => handleUploadProof(milestone.id)}
-                      disabled={uploading === milestone.id}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-900 text-white rounded-xl text-sm font-bold hover:bg-blue-800 transition-all disabled:opacity-50"
-                    >
-                      {uploading === milestone.id ? 'Uploading...' : (
-                        <>
-                          <Upload size={16} />
-                          Upload Proof
-                        </>
-                      )}
-                    </button>
-                  )}
-                  {role === 'Student' && milestone.status === 'Pending Approval' && (
-                    <span className="text-sm font-bold text-amber-600 italic">Waiting for Sponsor Review...</span>
-                  )}
-                  {role === 'Sponsor' && milestone.status === 'Pending Approval' && (
-                    <button
-                      onClick={() => handleReleaseFunds(milestone)}
-                      className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-all"
-                    >
-                      <CheckCircle2 size={16} />
-                      Approve & Release Funds
-                    </button>
-                  )}
-                  {milestone.released && (
-                    <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm">
-                      <CheckCircle2 size={18} />
-                      Funds Released ✓
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </div>
         </div>
 
         <div className="space-y-8">
-          <div className="bg-white p-8 rounded-[2rem] border border-blue-100 shadow-xl shadow-blue-50">
-            <h2 className="text-xl font-black text-blue-900 mb-6">Grant Summary</h2>
-            <div className="space-y-4">
-              <div className="flex justify-between py-3 border-b border-blue-50">
-                <span className="text-gray-500 font-medium">Total Funds</span>
-                <span className="font-bold text-blue-900">₹{grant.totalAmount.toLocaleString()}</span>
+          <div className="bg-white p-10 rounded-[3rem] border border-blue-50 shadow-2xl shadow-blue-100/20 sticky top-24">
+            <h2 className="text-2xl font-black text-blue-900 mb-8 tracking-tight">Financial Summary</h2>
+            <div className="space-y-6">
+              <div className="flex justify-between items-center group">
+                <span className="text-gray-400 font-black text-[10px] uppercase tracking-widest">Total Committed</span>
+                <span className="font-black text-xl text-blue-900">₹{grant.totalAmount.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between py-3 border-b border-blue-50">
-                <span className="text-gray-500 font-medium">Released</span>
-                <span className="font-bold text-emerald-600">₹{grant.milestones.filter(m => m.released).reduce((acc, m) => acc + m.amount, 0).toLocaleString()}</span>
+              <div className="flex justify-between items-center group">
+                <span className="text-gray-400 font-black text-[10px] uppercase tracking-widest">Actually Released</span>
+                <span className="font-black text-xl text-emerald-600">₹{releasedAmount.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between py-3">
-                <span className="text-gray-500 font-medium">Remaining</span>
-                <span className="font-bold text-blue-900">₹{grant.milestones.filter(m => !m.released).reduce((acc, m) => acc + m.amount, 0).toLocaleString()}</span>
+              <div className="h-px bg-gray-50"></div>
+              <div className="flex justify-between items-center group">
+                <span className="text-blue-900 font-black text-[10px] uppercase tracking-widest">Remaining Balance</span>
+                <span className="font-black text-2xl text-blue-900">₹{remainingAmount.toLocaleString()}</span>
               </div>
             </div>
+
             <Link
               to={`/grants/${grant.id}/spend`}
-              className="w-full mt-8 flex items-center justify-center gap-2 py-4 bg-blue-50 text-blue-900 rounded-2xl font-bold hover:bg-blue-100 transition-all"
+              className="w-full mt-10 flex items-center justify-center gap-3 py-5 bg-blue-50 text-blue-900 rounded-3xl font-black text-xs uppercase tracking-widest hover:bg-blue-900 hover:text-white transition-all shadow-sm group"
             >
-              <FileText size={18} />
-              View Proof of Spend
+              <FileText size={18} className="transition-transform group-hover:scale-110" />
+              Audit Transaction Wall
             </Link>
-          </div>
-
-          <div className="bg-blue-900 p-8 rounded-[2rem] text-white">
-            <h2 className="text-xl font-black mb-4">Smart Contract</h2>
-            <p className="text-blue-200 text-sm font-medium mb-6 leading-relaxed">
-              This grant is secured by an Algorand Smart Contract. Funds are locked and can only be released upon milestone approval.
-            </p>
-            <div className="flex items-center gap-2 text-xs font-mono bg-blue-800/50 p-3 rounded-xl border border-blue-700">
-              <ShieldCheck size={14} className="text-emerald-400" />
-              ALGO-SC-9283-XPL
-            </div>
           </div>
         </div>
       </div>
+
+      {/* Proof Submission Modal */}
+      {showProofModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-blue-900/20 backdrop-blur-md animate-in fade-in duration-300">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl p-10 border border-blue-50"
+          >
+            <h3 className="text-2xl font-black text-blue-900 mb-2">Submit Proof of Work</h3>
+            <p className="text-gray-400 text-sm font-bold mb-8 uppercase tracking-widest">Milestone: <span className="text-blue-600">{grant.milestones.find((m: any) => m.id === selectedMilestoneId)?.name}</span></p>
+
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Work Description or Links</label>
+                <textarea
+                  value={proofDescription}
+                  onChange={(e) => setProofDescription(e.target.value)}
+                  placeholder="e.g. GitHub Repository Link, Project URL, or summary of work done..."
+                  rows={4}
+                  className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-900 transition-all font-bold text-blue-900 resize-none"
+                  required
+                ></textarea>
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <button
+                  onClick={() => {
+                    setShowProofModal(false);
+                    setProofDescription('');
+                    setSelectedMilestoneId(null);
+                  }}
+                  className="flex-1 py-4 px-6 bg-gray-50 text-gray-400 rounded-2xl font-bold hover:bg-gray-100 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUploadProof}
+                  className="flex-1 py-4 px-6 bg-blue-900 text-white rounded-2xl font-black shadow-lg shadow-blue-100 hover:bg-black transition-all flex items-center justify-center gap-2"
+                >
+                  <ShieldCheck size={18} />
+                  Anchor On-Chain
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

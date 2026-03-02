@@ -50,15 +50,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     });
 
-    // Reconnect to Pera Wallet session on mount
-    peraWallet.reconnectSession().then((accounts) => {
-      if (accounts.length > 0) {
-        setAddress(accounts[0]);
+    // Reconnect to Pera Wallet session on mount or login
+    const reconnectPera = async () => {
+      try {
+        const accounts = await peraWallet.reconnectSession();
+        if (accounts.length > 0) {
+          setAddress(accounts[0]);
+        }
+      } catch (e) {
+        console.log('Pera reconnect failed', e);
       }
-    });
+    };
+
+    reconnectPera();
 
     return () => unsubscribe();
-  }, []);
+  }, [user]); // Re-run when user changes (login/logout) to restore wallet address
 
   const login = async (email: string, pass: string) => {
     await signInWithEmailAndPassword(auth, email, pass);
@@ -105,7 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     await signOut(auth);
-    peraWallet.disconnect();
+    // Remove peraWallet.disconnect() to keep session alive for re-login
     setAddress(null);
     setRoleState(null);
   };
