@@ -20,6 +20,8 @@ export default function CreateGrant() {
   const [studentAddress, setStudentAddress] = useState('Z3JLOX2FYRMJOX2TY7LLL22VP7P7T34YDYNOS6PSISEFPMXC6GNI5XCAVQ');
   const [milestones, setMilestones] = useState([{ name: '', amount: '' }]);
   const [loading, setLoading] = useState(false);
+  const [needsReset, setNeedsReset] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [walletLookupStatus, setWalletLookupStatus] = useState<'idle' | 'searching' | 'found' | 'not_found'>('idle');
 
   // Auto-lookup wallet address when email changes
@@ -72,6 +74,40 @@ export default function CreateGrant() {
     setMilestones(newMilestones);
   };
 
+  React.useEffect(() => {
+    if (milestones.length > 0) {
+      setTotalAmount(milestones.reduce((acc, m) => acc + (Number(m.amount) || 0), 0).toString());
+    }
+  }, [milestones]);
+
+  const handleResetContract = async (e: any) => {
+    e.preventDefault();
+    setResetting(true);
+    try {
+      const params = await algodClient.getTransactionParams().do();
+      const methodSelector = algosdk.ABIMethod.fromSignature('close_grant()void').getSelector();
+
+      const txn = algosdk.makeApplicationCallTxnFromObject({
+        sender: address as string,
+        suggestedParams: { ...params, fee: 2000, flatFee: true },
+        appIndex: CHAIN_GRANT_APP_ID,
+        onComplete: algosdk.OnApplicationComplete.NoOpOC,
+        appArgs: [methodSelector],
+      });
+
+      const signedTxns = await signTransaction([txn]);
+      await algodClient.sendRawTransaction(signedTxns).do();
+
+      alert('Smart contract escrow successfully reset! You can now click "Authorize & Lock Funds" to create your new grant.');
+      setNeedsReset(false);
+    } catch (err: any) {
+      console.error(err);
+      alert('Failed to reset the contract. Make sure you are using the same Sponsor wallet that created the previous active grant: ' + err.message);
+    } finally {
+      setResetting(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!address) {
@@ -117,13 +153,8 @@ export default function CreateGrant() {
         const globalState = appInfo.params.globalState || [];
         const initializedVar = globalState.find((kv: any) => kv.key === 'aW5pdGlhbGl6ZWQ='); // base64 for 'initialized'
         if (initializedVar && initializedVar.value && Number(initializedVar.value.uint) === 1) {
-          alert(
-            `⚠️ Contract already has an active grant!\n\n` +
-            `The smart contract escrow already holds locked funds from a previous grant.\n` +
-            `Please close/complete that grant before creating a new one.\n\n` +
-            `(This is a testnet demo limitation — one active grant at a time.)`
-          );
           setLoading(false);
+          setNeedsReset(true);
           return;
         }
       } catch (e) {
@@ -376,26 +407,56 @@ export default function CreateGrant() {
           )}
         </div>
 
-        <button
-          type="submit"
-          disabled={loading || !isBalanced}
-          className={`w-full py-6 rounded-[2.5rem] font-black text-2xl shadow-3xl transition-all transform flex items-center justify-center gap-3 ${isBalanced
-            ? 'bg-blue-900 text-white shadow-blue-200/50 hover:bg-black hover:-translate-y-1'
-            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-            } disabled:opacity-70`}
-        >
-          {loading ? (
-            <>
-              <Loader2 className="animate-spin" size={28} />
-              Processing Blockchain Tx...
-            </>
-          ) : (
-            <>
-              Authorize &amp; Lock Funds
-              <Shield size={24} />
-            </>
-          )}
-        </button>
+        {needsReset ? (
+          <div className="mt-8 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="p-5 bg-rose-50 border-2 border-rose-200 text-rose-900 rounded-3xl font-bold flex flex-col gap-2 shadow-sm">
+              <span className="flex items-center gap-2 text-rose-600 font-black tracking-widest uppercase text-xs">
+                <Lock size={16} />
+                Blockchain Security Block
+              </span>
+              <p className="text-sm">The decentralized escrow still holds locked funds (from a previous crashed/deleted test). You must forcibly reset it to proceed.</p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleResetContract}
+              disabled={resetting}
+              className="w-full py-6 rounded-[2.5rem] bg-rose-600 text-white font-black text-2xl shadow-lg shadow-rose-200/50 flex items-center justify-center gap-3 hover:bg-rose-700 transition-all transform hover:-translate-y-1"
+            >
+              {resetting ? <Loader2 className="animate-spin" size={28} /> : null}
+              {resetting ? "Resetting Blockchain..." : "Force Reset & Refund ALGO"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setNeedsReset(false)}
+              className="w-full py-4 rounded-[2.5rem] bg-gray-50 text-gray-500 font-black uppercase tracking-widest text-xs hover:bg-gray-100 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button
+            type="submit"
+            disabled={loading || !isBalanced}
+            className={`w-full py-6 rounded-[2.5rem] font-black text-2xl shadow-3xl transition-all transform flex items-center justify-center gap-3 ${isBalanced
+              ? 'bg-blue-900 text-white shadow-blue-200/50 hover:bg-black hover:-translate-y-1'
+              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              } disabled:opacity-70`}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="animate-spin" size={28} />
+                Processing Blockchain Tx...
+              </>
+            ) : (
+              <>
+                Authorize &amp; Lock Funds
+                <Shield size={24} />
+              </>
+            )}
+          </button>
+        )}
       </form>
     </div>
   );
