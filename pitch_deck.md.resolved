@@ -1,0 +1,115 @@
+# ChainGrant — Hackathon Pitch Deck
+
+---
+
+## Slide 1 — Problem Statement
+
+**Title:** The Broken Promise of Grants
+
+**Points:**
+- 💸 **₹1,200 Crore+** in student grants go untracked every year in India
+- No visibility for sponsors — money is transferred and disappears
+- Students have no proof of honest delivery of milestones
+- Middlemen, delays, and fraud are rampant in traditional grant systems
+- No immutable record exists when sponsors and students dispute outcomes
+
+**Visual idea:** Split screen — Sponsor asking "Did they complete the work?" vs Student asking "Where is my payment?"
+
+---
+
+## Slide 2 — Solution
+
+**Title:** ChainGrant — Trustless Grant Funding on the Blockchain
+
+**Key message:** We replace trust with cryptographic proof.
+
+**How:**
+- Every grant is locked in a **smart contract escrow** on Algorand
+- Funds are **only released** when the sponsor verifies the student's proof of work
+- Every transaction is permanently recorded on-chain — visible to anyone
+- Students earn **NFT badges** as on-chain reputation for every completed milestone
+
+**Tagline:** _"Not a promise. A smart contract."_
+
+---
+
+## Slide 3 — Implementation
+
+**Title:** How It Works — End to End
+
+**Flow (step by step):**
+
+1. 🔐 **Sponsor signs up** with email + Pera Wallet (wallet = identity)
+2. 📋 **Sponsor creates a grant** — defines milestones, amounts, student wallet → funds locked in Algorand escrow smart contract
+3. 📤 **Student submits proof** — uploads work description + generates a SHA-256 proof hash stored on-chain
+4. ✅ **Sponsor approves** — triggers [release_funds](file:///c:/Users/Computar/Desktop/grant/smart-contract/contract.py#86-108) ABI call → payment sent directly to student's wallet via inner transaction
+5. 🏅 **Student mints NFT Badge** — Algorand Standard Asset (ASA) minted as on-chain achievement credential
+6. 🔍 **Public Transparency Wall** — all grants publicly viewable with Lora Explorer verification links
+
+---
+
+## Slide 4 — Tech Stack
+
+**Title:** Built With Battle-Tested Web3 Infrastructure
+
+| Layer | Technology |
+|---|---|
+| **Blockchain** | Algorand Testnet |
+| **Smart Contract** | PyTeal / Puya Python (ARC-4 ABI) |
+| **Wallet Auth** | Pera Wallet (QR + Mobile) |
+| **Frontend** | React + TypeScript + Vite |
+| **Styling** | Tailwind CSS + Framer Motion |
+| **Database** | Firebase Firestore (metadata) |
+| **NFT Standard** | Algorand Standard Assets (ASA) |
+| **Contract Interface** | ARC-56 App Spec JSON |
+| **Block Explorer** | Lora by Algokit |
+
+**Key design decision:** Hybrid architecture — Firebase for speed, Algorand for immutability and trust.
+
+---
+
+## Slide 5 — Features
+
+**Title:** What Makes ChainGrant Different
+
+| Feature | Traditional Grants | ChainGrant |
+|---|---|---|
+| Fund custody | Bank / middleman | Smart contract escrow |
+| Payment trigger | Manual / paper | On-chain ABI call |
+| Proof of work | Email / document | SHA-256 hash stored on-chain |
+| Transparency | Zero | Public Transparency Wall |
+| Student credentials | Paper certificate | NFT badge on Algorand |
+| Dispute resolution | Legal / slow | Smart contract enforces rules |
+| Login | Username + password | Pera Wallet (Web3 native) |
+
+**Bonus features:**
+- 🔗 Every transaction links to Lora Explorer for public verification
+- 🛡️ Only the registered sponsor can release funds (enforced by smart contract)
+- 📊 Real-time dashboard for both sponsors and students
+
+---
+
+## Slide 6 — Conclusion
+
+**Title:** The Future of Transparent, Trustless Funding
+
+**What we built:**
+- A fully functional grant management platform on Algorand Testnet
+- Smart contract with ABI-encoded milestones, proof hash storage, and escrow logic
+- Wallet-first authentication — your Pera Wallet IS your identity
+- On-chain NFT reputation badges for students
+
+**Impact:**
+- Eliminates fraud in grant disbursement
+- Gives sponsors real-time verifiable proof of milestone completion
+- Creates a portable, on-chain reputation for students
+
+**What's next:**
+- Mainnet deployment
+- Multi-milestone concurrent grants
+- DAO-based grant approval for community-funded scholarships
+
+> **"We don't ask you to trust us. We ask you to trust the code."**
+
+---
+*Team ChainGrant | Built on Algorand | March 2026*
