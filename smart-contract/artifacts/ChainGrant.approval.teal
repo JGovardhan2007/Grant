@@ -1,0 +1,393 @@
+#pragma version 11
+#pragma typetrack false
+
+// algopy.arc4.ARC4Contract.approval_program() -> uint64:
+main:
+    intcblock 0 1 32
+    bytecblock "initialized" "sponsor" "released" "total_locked" "student" 0x151f7c75
+    // contract.py:28
+    // class ChainGrant(ARC4Contract):
+    txn NumAppArgs
+    bz main_create@16
+    txn OnCompletion
+    !
+    assert
+    txn ApplicationID
+    assert
+    pushbytess 0xdd74afba 0x194618cb 0xfccc4abb 0x643be059 0xb910c77b 0xc5691386 0xbf959764 // method "initialize_grant(address,pay)void", method "release_funds(uint64)void", method "request_changes(string)void", method "close_grant()void", method "get_balance()uint64", method "get_student()address", method "get_sponsor()address"
+    txna ApplicationArgs 0
+    match initialize_grant release_funds request_changes close_grant get_balance get_student get_sponsor
+    err
+
+main_create@16:
+    // contract.py:42
+    // @arc4.baremethod(create="allow")
+    txn OnCompletion
+    !
+    assert
+    // contract.py:45
+    // self.initialized.value = UInt64(0)
+    bytec_0 // "initialized"
+    intc_0 // 0
+    app_global_put
+    // contract.py:42
+    // @arc4.baremethod(create="allow")
+    intc_1 // 1
+    return
+
+
+// contract.ChainGrant.initialize_grant[routing]() -> void:
+initialize_grant:
+    // contract.py:51
+    // @arc4.abimethod
+    txna ApplicationArgs 1
+    dup
+    len
+    dup
+    intc_2 // 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    txn GroupIndex
+    intc_1 // 1
+    -
+    dup
+    gtxns TypeEnum
+    intc_1 // pay
+    ==
+    assert // transaction type is pay
+    // contract.py:68
+    // assert self.initialized.value == UInt64(0), "Grant already initialized"
+    intc_0 // 0
+    bytec_0 // "initialized"
+    app_global_get_ex
+    assert // check self.initialized exists
+    !
+    assert // Grant already initialized
+    // contract.py:69
+    // assert payment.receiver == Global.current_application_address, "Payment must go to app"
+    dup
+    gtxns Receiver
+    global CurrentApplicationAddress
+    ==
+    assert // Payment must go to app
+    // contract.py:70
+    // assert payment.amount > UInt64(0), "Must lock at least 1 microALGO"
+    gtxns Amount
+    dup
+    assert // Must lock at least 1 microALGO
+    // contract.py:72
+    // self.sponsor.value = Txn.sender
+    bytec_1 // "sponsor"
+    txn Sender
+    app_global_put
+    // contract.py:73
+    // self.student.value = Account(student.bytes)
+    intc_2 // 32
+    uncover 2
+    ==
+    assert // Address length is 32 bytes
+    bytec 4 // "student"
+    uncover 2
+    app_global_put
+    // contract.py:74
+    // self.total_locked.value = payment.amount
+    bytec_3 // "total_locked"
+    swap
+    app_global_put
+    // contract.py:75
+    // self.released.value = UInt64(0)
+    bytec_2 // "released"
+    intc_0 // 0
+    app_global_put
+    // contract.py:76
+    // self.initialized.value = UInt64(1)
+    bytec_0 // "initialized"
+    intc_1 // 1
+    app_global_put
+    // contract.py:51
+    // @arc4.abimethod
+    intc_1 // 1
+    return
+
+
+// contract.ChainGrant.release_funds[routing]() -> void:
+release_funds:
+    // contract.py:82
+    // @arc4.abimethod
+    txna ApplicationArgs 1
+    dup
+    len
+    pushint 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    // contract.py:88
+    // assert self.initialized.value == UInt64(1), "Grant not initialized"
+    intc_0 // 0
+    bytec_0 // "initialized"
+    app_global_get_ex
+    assert // check self.initialized exists
+    intc_1 // 1
+    ==
+    assert // Grant not initialized
+    // contract.py:89
+    // assert Txn.sender == self.sponsor.value, "Only sponsor can release funds"
+    txn Sender
+    intc_0 // 0
+    bytec_1 // "sponsor"
+    app_global_get_ex
+    assert // check self.sponsor exists
+    ==
+    assert // Only sponsor can release funds
+    // contract.py:91
+    // release_amount = amount_micro_algo.native
+    btoi
+    // contract.py:92
+    // remaining = self.total_locked.value - self.released.value
+    intc_0 // 0
+    bytec_3 // "total_locked"
+    app_global_get_ex
+    assert // check self.total_locked exists
+    intc_0 // 0
+    bytec_2 // "released"
+    app_global_get_ex
+    assert // check self.released exists
+    swap
+    dig 1
+    -
+    // contract.py:93
+    // assert release_amount <= remaining, "Not enough locked funds"
+    dig 2
+    >=
+    assert // Not enough locked funds
+    // contract.py:94
+    // assert release_amount > UInt64(0), "Amount must be positive"
+    dig 1
+    assert // Amount must be positive
+    // contract.py:96-100
+    // itxn.Payment(
+    //     receiver=self.student.value,
+    //     amount=release_amount,
+    //     fee=Global.min_txn_fee,
+    // ).submit()
+    itxn_begin
+    // contract.py:99
+    // fee=Global.min_txn_fee,
+    global MinTxnFee
+    // contract.py:97
+    // receiver=self.student.value,
+    intc_0 // 0
+    bytec 4 // "student"
+    app_global_get_ex
+    assert // check self.student exists
+    dig 3
+    itxn_field Amount
+    itxn_field Receiver
+    // contract.py:96
+    // itxn.Payment(
+    intc_1 // pay
+    itxn_field TypeEnum
+    itxn_field Fee
+    // contract.py:96-100
+    // itxn.Payment(
+    //     receiver=self.student.value,
+    //     amount=release_amount,
+    //     fee=Global.min_txn_fee,
+    // ).submit()
+    itxn_submit
+    // contract.py:102
+    // self.released.value = self.released.value + release_amount
+    +
+    bytec_2 // "released"
+    swap
+    app_global_put
+    // contract.py:82
+    // @arc4.abimethod
+    intc_1 // 1
+    return
+
+
+// contract.ChainGrant.request_changes[routing]() -> void:
+request_changes:
+    // contract.py:108
+    // @arc4.abimethod
+    txna ApplicationArgs 1
+    dup
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    pushint 2
+    +
+    swap
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
+    // contract.py:114
+    // assert self.initialized.value == UInt64(1), "Grant not initialized"
+    intc_0 // 0
+    bytec_0 // "initialized"
+    app_global_get_ex
+    assert // check self.initialized exists
+    intc_1 // 1
+    ==
+    assert // Grant not initialized
+    // contract.py:115
+    // assert Txn.sender == self.sponsor.value, "Only sponsor can request changes"
+    txn Sender
+    intc_0 // 0
+    bytec_1 // "sponsor"
+    app_global_get_ex
+    assert // check self.sponsor exists
+    ==
+    assert // Only sponsor can request changes
+    // contract.py:108
+    // @arc4.abimethod
+    intc_1 // 1
+    return
+
+
+// contract.ChainGrant.close_grant[routing]() -> void:
+close_grant:
+    // contract.py:125
+    // assert self.initialized.value == UInt64(1), "Grant not initialized"
+    intc_0 // 0
+    bytec_0 // "initialized"
+    app_global_get_ex
+    assert // check self.initialized exists
+    intc_1 // 1
+    ==
+    assert // Grant not initialized
+    // contract.py:126
+    // assert Txn.sender == self.sponsor.value, "Only sponsor can close"
+    txn Sender
+    intc_0 // 0
+    bytec_1 // "sponsor"
+    app_global_get_ex
+    assert // check self.sponsor exists
+    ==
+    assert // Only sponsor can close
+    // contract.py:128
+    // remaining = self.total_locked.value - self.released.value
+    intc_0 // 0
+    bytec_3 // "total_locked"
+    app_global_get_ex
+    assert // check self.total_locked exists
+    intc_0 // 0
+    bytec_2 // "released"
+    app_global_get_ex
+    assert // check self.released exists
+    -
+    dup
+    // contract.py:129
+    // if remaining > UInt64(0):
+    bz close_grant_after_if_else@4
+    // contract.py:130-134
+    // itxn.Payment(
+    //     receiver=self.sponsor.value,
+    //     amount=remaining,
+    //     fee=Global.min_txn_fee,
+    // ).submit()
+    itxn_begin
+    // contract.py:133
+    // fee=Global.min_txn_fee,
+    global MinTxnFee
+    // contract.py:131
+    // receiver=self.sponsor.value,
+    intc_0 // 0
+    bytec_1 // "sponsor"
+    app_global_get_ex
+    assert // check self.sponsor exists
+    dig 2
+    itxn_field Amount
+    itxn_field Receiver
+    // contract.py:130
+    // itxn.Payment(
+    intc_1 // pay
+    itxn_field TypeEnum
+    itxn_field Fee
+    // contract.py:130-134
+    // itxn.Payment(
+    //     receiver=self.sponsor.value,
+    //     amount=remaining,
+    //     fee=Global.min_txn_fee,
+    // ).submit()
+    itxn_submit
+
+close_grant_after_if_else@4:
+    // contract.py:136
+    // self.initialized.value = UInt64(0)
+    bytec_0 // "initialized"
+    intc_0 // 0
+    app_global_put
+    // contract.py:122
+    // @arc4.abimethod
+    intc_1 // 1
+    return
+
+
+// contract.ChainGrant.get_balance[routing]() -> void:
+get_balance:
+    // contract.py:145
+    // return arc4.UInt64(self.total_locked.value - self.released.value)
+    intc_0 // 0
+    bytec_3 // "total_locked"
+    app_global_get_ex
+    assert // check self.total_locked exists
+    intc_0 // 0
+    bytec_2 // "released"
+    app_global_get_ex
+    assert // check self.released exists
+    -
+    itob
+    // contract.py:142
+    // @arc4.abimethod(readonly=True)
+    bytec 5 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
+
+// contract.ChainGrant.get_student[routing]() -> void:
+get_student:
+    // contract.py:150
+    // return arc4.Address(self.student.value.bytes)
+    intc_0 // 0
+    bytec 4 // "student"
+    app_global_get_ex
+    assert // check self.student exists
+    dup
+    len
+    intc_2 // 32
+    ==
+    assert // Address length is 32 bytes
+    // contract.py:147
+    // @arc4.abimethod(readonly=True)
+    bytec 5 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
+
+// contract.ChainGrant.get_sponsor[routing]() -> void:
+get_sponsor:
+    // contract.py:155
+    // return arc4.Address(self.sponsor.value.bytes)
+    intc_0 // 0
+    bytec_1 // "sponsor"
+    app_global_get_ex
+    assert // check self.sponsor exists
+    dup
+    len
+    intc_2 // 32
+    ==
+    assert // Address length is 32 bytes
+    // contract.py:152
+    // @arc4.abimethod(readonly=True)
+    bytec 5 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return

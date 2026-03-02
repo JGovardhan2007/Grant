@@ -6,7 +6,8 @@ import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 import { useAuth } from '../context/AuthContext';
-import { sendPayment, algodClient } from '../lib/algorand';
+import { algodClient, CHAIN_GRANT_APP_ID, CHAIN_GRANT_APP_ADDR } from '../lib/algorand';
+import algosdk from 'algosdk';
 
 export default function CreateGrant() {
   const navigate = useNavigate();
@@ -54,13 +55,42 @@ export default function CreateGrant() {
 
     setLoading(true);
     try {
-      // 1. Lock Funds on Algorand (Experimental/Demo amount)
-      const txn = await sendPayment(address as string, address as string, 0.1, `ChainGrant: ${title}`);
-      const txId = txn.txID();
-      const signedTxns = await signTransaction([txn]);
-      await algodClient.sendRawTransaction(signedTxns).do();
+      // 1. Get suggested params
+      const params = await algodClient.getTransactionParams().do();
 
-      // 2. Save Metadata to Firestore
+      // Convert INR to microALGO for testnet demo (1 INR = 0.001 ALGO = 1000 microALGO)
+      const microAlgo = BigInt(Math.round(Number(totalAmount) * 1000));
+
+      // 2. Build ABI method call for initialize_grant
+      //    ABI method selector = first 4 bytes of SHA-512/256 of "initialize_grant(address,pay)void"
+      const methodSelector = algosdk.ABIMethod.fromSignature('initialize_grant(address,pay)void').getSelector();
+      const studentAddrBytes = algosdk.decodeAddress(address as string).publicKey; // use sponsor for demo
+
+      const appCallTxn = algosdk.makeApplicationCallTxnFromObject({
+        sender: address as string,
+        suggestedParams: params,
+        appIndex: CHAIN_GRANT_APP_ID,
+        onComplete: algosdk.OnApplicationComplete.NoOpOC,
+        appArgs: [methodSelector, algosdk.ABIAddressType.from('address').encode(address as string)],
+      });
+
+      // 3. Payment to lock funds in the contract escrow
+      const paymentTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+        sender: address as string,
+        receiver: CHAIN_GRANT_APP_ADDR,
+        amount: microAlgo,
+        suggestedParams: params,
+      });
+
+      // 4. Group both transactions
+      algosdk.assignGroupID([appCallTxn, paymentTxn]);
+
+      // 5. Sign both via wallet
+      const signedTxns = await signTransaction([appCallTxn, paymentTxn]);
+      const sendResult = await algodClient.sendRawTransaction(signedTxns).do();
+      const fundingTxId = sendResult.txid;
+
+      // 6. Save Metadata to Firestore
       await addDoc(collection(db, 'grants'), {
         title,
         description,
@@ -68,7 +98,7 @@ export default function CreateGrant() {
         studentEmail,
         sponsorEmail: user?.email,
         sponsorAddress: address,
-        fundingTxId: txId,
+        fundingTxId: fundingTxId,
         status: 'Active',
         createdAt: new Date().toISOString(),
         milestones: milestones.map((m, i) => ({
@@ -235,8 +265,8 @@ export default function CreateGrant() {
           {/* Live Balance Indicator */}
           {totalNum > 0 && (
             <div className={`mt-6 p-5 rounded-2xl border-2 transition-all ${isBalanced ? 'bg-emerald-50 border-emerald-200'
-                : remainder < 0 ? 'bg-rose-50 border-rose-200'
-                  : 'bg-amber-50 border-amber-200'
+              : remainder < 0 ? 'bg-rose-50 border-rose-200'
+                : 'bg-amber-50 border-amber-200'
               }`}>
               <div className="flex justify-between items-center mb-3">
                 <span className={`text-[10px] font-black uppercase tracking-widest ${isBalanced ? 'text-emerald-600' : remainder < 0 ? 'text-rose-600' : 'text-amber-600'

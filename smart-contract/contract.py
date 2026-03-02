@@ -1,19 +1,14 @@
 """
 ChainGrant Escrow Smart Contract
 =================================
-This ARC-4 Algorand smart contract acts as an escrow vault for a single grant.
+ARC-4 escrow contract for ChainGrant. One contract instance is deployed
+as a "template" and individual grants are tracked via a simple escrow pattern.
 
-Flow:
-  1. Sponsor calls create_grant() with a grouped payment transaction → ALGO locked in app.
-  2. For each approved milestone, sponsor calls release_funds() → ALGO sent directly to student wallet.
-  3. Sponsor can call request_changes() to mark a milestone blocked (purely informational on-chain).
-  4. Sponsor can reclaim remaining ALGO via close_grant() if grant is cancelled.
-
-Global State keys (8 total):
-  - sponsor      : Address of grant creator
-  - student      : Address of student receiving payments
-  - total_locked : uint64 — total ALGO (microALGO) deposited
-  - released     : uint64 — running total microALGO already paid out
+Architecture:
+  - Deploy ONCE via deploy.mjs → get App ID
+  - Frontend calls initialize_grant() per grant (grouped with a payment)
+  - Frontend calls release_funds() to pay the student
+  - Frontend calls request_changes() to emit an on-chain record
 """
 
 from algopy import (
@@ -26,64 +21,71 @@ from algopy import (
     itxn,
     gtxn,
     arc4,
+    Bytes,
 )
 
 
 class ChainGrant(ARC4Contract):
     """Escrow vault for a single ChainGrant grant."""
 
-    # ------------------------------------------------------------------ #
-    # Global state declarations                                            #
-    # ------------------------------------------------------------------ #
-    sponsor: GlobalState[Account]
-    student: GlobalState[Account]
-    total_locked: GlobalState[UInt64]
-    released: GlobalState[UInt64]
+    def __init__(self) -> None:
+        self.sponsor = GlobalState(Account, key="sponsor", description="Grant sponsor address")
+        self.student = GlobalState(Account, key="student", description="Grant student address")
+        self.total_locked = GlobalState(UInt64, key="total_locked", description="Total microALGO locked")
+        self.released = GlobalState(UInt64, key="released", description="MicroALGO released so far")
+        self.initialized = GlobalState(UInt64, key="initialized", description="1 when grant is active")
 
     # ------------------------------------------------------------------ #
-    # Lifecycle                                                            #
+    # Bare create — allows simple app creation without ABI args           #
     # ------------------------------------------------------------------ #
 
-    @arc4.abimethod(create="require")
-    def create_grant(
+    @arc4.baremethod(create="allow")
+    def create(self) -> None:
+        """Deploy the app. State is initialized later via initialize_grant()."""
+        self.initialized.value = UInt64(0)
+
+    # ------------------------------------------------------------------ #
+    # Initialize grant with funds                                          #
+    # ------------------------------------------------------------------ #
+
+    @arc4.abimethod
+    def initialize_grant(
         self,
         student: arc4.Address,
         payment: gtxn.PaymentTransaction,
     ) -> None:
         """
-        Deploy the contract and lock funds in one grouped transaction.
+        Set up the grant escrow. Must be called by the sponsor after deployment.
 
         Grouped tx:
-          [0] ApplicationCall (this transaction, deploying the contract)
-          [1] PaymentTransaction — sending ALGO from sponsor to app address
+          [0] ApplicationCall (this)
+          [1] PaymentTransaction — sends ALGO from sponsor to app escrow
 
         Args:
-            student:  Algorand address of the grant recipient (student).
-            payment:  Grouped PaymentTransaction that sends ALGO to this app.
+            student:  Algorand address of the grant recipient.
+            payment:  Grouped payment sending ALGO to this app.
         """
-        # Validate the payment goes to this app's escrow address
+        assert self.initialized.value == UInt64(0), "Grant already initialized"
         assert payment.receiver == Global.current_application_address, "Payment must go to app"
         assert payment.amount > UInt64(0), "Must lock at least 1 microALGO"
 
-        # Store state
         self.sponsor.value = Txn.sender
         self.student.value = Account(student.bytes)
         self.total_locked.value = payment.amount
         self.released.value = UInt64(0)
+        self.initialized.value = UInt64(1)
 
     # ------------------------------------------------------------------ #
-    # Actions                                                              #
+    # Release funds to student                                             #
     # ------------------------------------------------------------------ #
 
     @arc4.abimethod
     def release_funds(self, amount_micro_algo: arc4.UInt64) -> None:
         """
-        Release a specific amount (microALGO) from escrow to the student.
-        Only the sponsor can call this.
-
-        Args:
-            amount_micro_algo: Amount in microALGO to release (1 ALGO = 1_000_000 µA).
+        Release a specific microALGO amount from escrow to the student.
+        Only callable by the sponsor.
         """
+        assert self.initialized.value == UInt64(1), "Grant not initialized"
         assert Txn.sender == self.sponsor.value, "Only sponsor can release funds"
 
         release_amount = amount_micro_algo.native
@@ -91,7 +93,6 @@ class ChainGrant(ARC4Contract):
         assert release_amount <= remaining, "Not enough locked funds"
         assert release_amount > UInt64(0), "Amount must be positive"
 
-        # Transfer ALGO to student
         itxn.Payment(
             receiver=self.student.value,
             amount=release_amount,
@@ -100,25 +101,28 @@ class ChainGrant(ARC4Contract):
 
         self.released.value = self.released.value + release_amount
 
+    # ------------------------------------------------------------------ #
+    # Request changes (on-chain record, no fund movement)                  #
+    # ------------------------------------------------------------------ #
+
     @arc4.abimethod
     def request_changes(self, milestone_name: arc4.String) -> None:
         """
-        Record a 'changes requested' event on-chain (via app log / note).
-        Only the sponsor can call this. Does not move funds.
-
-        Args:
-            milestone_name: Name of the milestone being flagged.
+        Emit an on-chain record that changes are requested for a milestone.
+        Only callable by the sponsor. Does not move any funds.
         """
+        assert self.initialized.value == UInt64(1), "Grant not initialized"
         assert Txn.sender == self.sponsor.value, "Only sponsor can request changes"
-        # The call itself (with its note) is the on-chain record — no state change needed.
-        _ = milestone_name  # suppress linter warning; value is in tx note/log
+        # The transaction itself (with milestone_name in the note) IS the on-chain record
+
+    # ------------------------------------------------------------------ #
+    # Close grant and reclaim remaining funds                              #
+    # ------------------------------------------------------------------ #
 
     @arc4.abimethod
     def close_grant(self) -> None:
-        """
-        Return all remaining unclaimed ALGO to the sponsor and close the app.
-        Only callable by the sponsor.
-        """
+        """Return remaining ALGO to the sponsor. Only callable by sponsor."""
+        assert self.initialized.value == UInt64(1), "Grant not initialized"
         assert Txn.sender == self.sponsor.value, "Only sponsor can close"
 
         remaining = self.total_locked.value - self.released.value
@@ -128,6 +132,8 @@ class ChainGrant(ARC4Contract):
                 amount=remaining,
                 fee=Global.min_txn_fee,
             ).submit()
+
+        self.initialized.value = UInt64(0)
 
     # ------------------------------------------------------------------ #
     # Read-only helpers                                                    #

@@ -16,8 +16,9 @@ import { motion } from 'motion/react';
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
-import { sendPayment, algodClient } from '../lib/algorand';
+import { algodClient, CHAIN_GRANT_APP_ID } from '../lib/algorand';
 import { generateHash } from '../lib/hashing';
+import algosdk from 'algosdk';
 
 export default function MilestoneTracker() {
   const { id } = useParams();
@@ -126,15 +127,32 @@ export default function MilestoneTracker() {
 
     setReleasing(milestone.id);
     try {
-      // 1. Transaction on Algorand
-      const txn = await sendPayment(address, address, 0.01, `ChainGrant Release: ${milestone.name}`);
+      // 1. Build ABI call to release_funds on the smart contract
+      const params = await algodClient.getTransactionParams().do();
+
+      // Convert INR to microALGO (1 INR = 1000 microALGO for testnet demo)
+      const microAlgo = BigInt(Math.round(milestone.amount * 1000));
+
+      const methodSelector = algosdk.ABIMethod.fromSignature('release_funds(uint64)void').getSelector();
+      const amountArg = algosdk.ABIUintType.from('uint64').encode(microAlgo);
+
+      const txn = algosdk.makeApplicationCallTxnFromObject({
+        sender: address,
+        suggestedParams: params,
+        appIndex: CHAIN_GRANT_APP_ID,
+        onComplete: algosdk.OnApplicationComplete.NoOpOC,
+        appArgs: [methodSelector, amountArg],
+        note: new TextEncoder().encode(`ChainGrant Release: ${milestone.name}`),
+      });
+
       const signedTxns = await signTransaction([txn]);
-      await algodClient.sendRawTransaction(signedTxns).do();
+      const sendResult = await algodClient.sendRawTransaction(signedTxns).do();
+      const releaseTxId = sendResult.txid;
 
       // 2. Update Firestore
       const updatedMilestones = grant.milestones.map((m: any) =>
         m.id === milestone.id
-          ? { ...m, status: 'Completed', released: true }
+          ? { ...m, status: 'Completed', released: true, txId: releaseTxId }
           : m
       );
 
@@ -146,7 +164,7 @@ export default function MilestoneTracker() {
         status: allDone ? 'Completed' : 'Active'
       });
 
-      alert(`Success! ₹${milestone.amount.toLocaleString()} released on Algorand.`);
+      alert(`Success! ₹${milestone.amount.toLocaleString()} released on Algorand. Tx: ${releaseTxId.substring(0, 8)}...`);
     } catch (error) {
       console.error('Fund release failed:', error);
       alert(`Transaction failed. Check console for details.`);
