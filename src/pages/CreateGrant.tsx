@@ -17,6 +17,7 @@ export default function CreateGrant() {
   const [description, setDescription] = useState('');
   const [totalAmount, setTotalAmount] = useState('');
   const [studentEmail, setStudentEmail] = useState('');
+  const [studentAddress, setStudentAddress] = useState('Z3JLOX2FYRMJOX2TY7LLL22VP7P7T34YDYNOS6PSISEFPMXC6GNI5XCAVQ');
   const [milestones, setMilestones] = useState([{ name: '', amount: '' }]);
   const [loading, setLoading] = useState(false);
 
@@ -61,17 +62,16 @@ export default function CreateGrant() {
       // Convert INR to microALGO for testnet demo (1 INR = 0.001 ALGO = 1000 microALGO)
       const microAlgo = BigInt(Math.round(Number(totalAmount) * 1000));
 
-      // 2. Build ABI method call for initialize_grant
-      //    ABI method selector = first 4 bytes of SHA-512/256 of "initialize_grant(address,pay)void"
+      // 2. Encode student address for ABI call
       const methodSelector = algosdk.ABIMethod.fromSignature('initialize_grant(address,pay)void').getSelector();
-      const studentAddrBytes = algosdk.decodeAddress(address as string).publicKey; // use sponsor for demo
+      const encodedStudentAddr = algosdk.ABIAddressType.from('address').encode(studentAddress);
 
       const appCallTxn = algosdk.makeApplicationCallTxnFromObject({
         sender: address as string,
         suggestedParams: params,
         appIndex: CHAIN_GRANT_APP_ID,
         onComplete: algosdk.OnApplicationComplete.NoOpOC,
-        appArgs: [methodSelector, algosdk.ABIAddressType.from('address').encode(address as string)],
+        appArgs: [methodSelector, encodedStudentAddr],
       });
 
       // 3. Payment to lock funds in the contract escrow
@@ -96,6 +96,7 @@ export default function CreateGrant() {
         description,
         totalAmount: Number(totalAmount),
         studentEmail,
+        studentAddress,
         sponsorEmail: user?.email,
         sponsorAddress: address,
         fundingTxId: fundingTxId,
@@ -158,6 +159,17 @@ export default function CreateGrant() {
                   onChange={(e) => setStudentEmail(e.target.value)}
                   placeholder="student@university.edu"
                   className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-900 transition-all font-bold text-blue-900"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Student Algorand Wallet Address</label>
+                <input
+                  type="text"
+                  value={studentAddress}
+                  onChange={(e) => setStudentAddress(e.target.value)}
+                  placeholder="Paste student's Algorand address (58 chars)"
+                  className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-900 transition-all font-bold text-blue-900 font-mono text-sm"
                   required
                 />
               </div>
