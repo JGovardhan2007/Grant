@@ -17,19 +17,34 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 export default function Dashboard() {
-  const { role, user } = useAuth();
+  const { role, user, address, displayName } = useAuth();
   const [grants, setGrants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    // Support both Firebase-auth users (email) and wallet-only users (address)
+    const isEmailUser = !!user?.email;
+    const isWalletUser = !!address;
+
+    if (!isEmailUser && !isWalletUser) {
+      setLoading(false);
+      return;
+    }
 
     const grantsRef = collection(db, 'grants');
-    // If Sponsor, show grants they created. If Student, show grants assigned to them.
-    // In a real app, you'd filter by user email or ID.
-    const q = role === 'Sponsor'
-      ? query(grantsRef, where('sponsorEmail', '==', user.email))
-      : query(grantsRef, where('studentEmail', '==', user.email));
+    let q;
+
+    if (isEmailUser) {
+      // Email login: query by stored email field
+      q = role === 'Sponsor'
+        ? query(grantsRef, where('sponsorEmail', '==', user!.email))
+        : query(grantsRef, where('studentEmail', '==', user!.email));
+    } else {
+      // Wallet login: query by stored wallet address field
+      q = role === 'Sponsor'
+        ? query(grantsRef, where('sponsorAddress', '==', address))
+        : query(grantsRef, where('studentAddress', '==', address));
+    }
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const grantsData = snapshot.docs.map(doc => ({
@@ -41,7 +56,8 @@ export default function Dashboard() {
     });
 
     return () => unsubscribe();
-  }, [user, role]);
+  }, [user, address, role]);
+
 
   const stats = role === 'Sponsor' ? [
     { label: 'Grants Created', value: grants.length, icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -68,7 +84,7 @@ export default function Dashboard() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <header className="flex justify-between items-end">
         <div>
-          <h1 className="text-4xl font-black text-blue-900 tracking-tight">Welcome, {user?.email?.split('@')[0]}!</h1>
+          <h1 className="text-4xl font-black text-blue-900 tracking-tight">Welcome, {displayName || user?.email?.split('@')[0] || address?.substring(0, 8)}!</h1>
           <p className="text-gray-500 font-medium">Here's your real-time grant overview.</p>
         </div>
         {role === 'Sponsor' && (
