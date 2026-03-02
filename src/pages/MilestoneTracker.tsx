@@ -142,6 +142,7 @@ export default function MilestoneTracker() {
         appIndex: CHAIN_GRANT_APP_ID,
         onComplete: algosdk.OnApplicationComplete.NoOpOC,
         appArgs: [methodSelector, amountArg],
+        accounts: [grant.studentAddress],
         note: new TextEncoder().encode(`ChainGrant Release: ${milestone.name}`),
       });
 
