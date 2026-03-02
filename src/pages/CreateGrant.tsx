@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, Shield, Lock, IndianRupee, Users, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 import { useAuth } from '../context/AuthContext';
@@ -20,6 +20,37 @@ export default function CreateGrant() {
   const [studentAddress, setStudentAddress] = useState('Z3JLOX2FYRMJOX2TY7LLL22VP7P7T34YDYNOS6PSISEFPMXC6GNI5XCAVQ');
   const [milestones, setMilestones] = useState([{ name: '', amount: '' }]);
   const [loading, setLoading] = useState(false);
+  const [walletLookupStatus, setWalletLookupStatus] = useState<'idle' | 'searching' | 'found' | 'not_found'>('idle');
+
+  // Auto-lookup wallet address when email changes
+  React.useEffect(() => {
+    const lookupWallet = async () => {
+      if (!studentEmail || !studentEmail.includes('@')) {
+        setWalletLookupStatus('idle');
+        return;
+      }
+
+      setWalletLookupStatus('searching');
+      try {
+        const q = query(collection(db, 'walletUsers'), where('email', '==', studentEmail), where('role', '==', 'Student'));
+        const snapshot = await getDocs(q);
+
+        if (!snapshot.empty) {
+          const userData = snapshot.docs[0].data();
+          setStudentAddress(snapshot.docs[0].id); // The document ID is the wallet address
+          setWalletLookupStatus('found');
+        } else {
+          setWalletLookupStatus('not_found');
+        }
+      } catch (err) {
+        console.error('Failed to lookup wallet:', err);
+        setWalletLookupStatus('not_found');
+      }
+    };
+
+    const timeoutId = setTimeout(lookupWallet, 500); // debounce lookup
+    return () => clearTimeout(timeoutId);
+  }, [studentEmail]);
 
   // Derived: compute sum of milestone amounts
   const milestoneSum = milestones.reduce((sum, m) => sum + (Number(m.amount) || 0), 0);
@@ -201,13 +232,19 @@ export default function CreateGrant() {
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Student Algorand Wallet Address</label>
+                <div className="flex justify-between items-end">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Student Algorand Wallet Address</label>
+                  {walletLookupStatus === 'searching' && <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1"><Loader2 size={10} className="animate-spin" /> Searching...</span>}
+                  {walletLookupStatus === 'found' && <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">Found linked wallet ✓</span>}
+                  {walletLookupStatus === 'not_found' && studentEmail.includes('@') && <span className="text-[10px] font-bold text-amber-600">No student wallet linked to this email</span>}
+                </div>
                 <input
                   type="text"
                   value={studentAddress}
                   onChange={(e) => setStudentAddress(e.target.value)}
                   placeholder="Paste student's Algorand address (58 chars)"
-                  className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-900 transition-all font-bold text-blue-900 font-mono text-sm"
+                  className={`w-full px-6 py-4 bg-gray-50 border-2 rounded-2xl focus:ring-0 transition-all font-bold font-mono text-sm tracking-tight ${walletLookupStatus === 'found' ? 'border-emerald-200 focus:border-emerald-400 bg-emerald-50/30 text-emerald-900' : 'border-transparent focus:border-blue-200 text-blue-900'
+                    }`}
                   required
                 />
               </div>
