@@ -199,7 +199,6 @@ export default function MilestoneTracker() {
       alert('Please connect your Algorand wallet first!');
       return;
     }
-    if (!window.confirm("Are you sure you want to close this grant? Any remaining funds will be refunded to your wallet and the contract state will reset.")) return;
 
     setReleasing('closing');
     try {
