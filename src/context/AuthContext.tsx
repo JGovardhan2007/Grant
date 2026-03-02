@@ -98,6 +98,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * then stores the binding in BOTH Firestore and localStorage.
    */
   const signupWithWallet = async (userEmail: string, selectedRole: Role) => {
+    // Disconnect any existing session so user always gets to pick/confirm their wallet
+    try { await peraWallet.disconnect(); } catch (e) { /* ignore if no session */ }
+
     const accounts = await peraWallet.connect();
     if (accounts.length === 0) throw new Error('No wallet accounts found');
 
@@ -125,7 +128,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * No email input needed — the wallet IS the identity.
    */
   const loginWithWallet = async () => {
-    const accounts = await peraWallet.connect();
+    // Reuse existing Pera session if available, otherwise open connect modal
+    let accounts: string[] = [];
+    try {
+      accounts = await peraWallet.reconnectSession();
+    } catch (e) {
+      // No existing session — open the QR/connect modal
+    }
+    if (accounts.length === 0) {
+      accounts = await peraWallet.connect();
+    }
     if (accounts.length === 0) throw new Error('No wallet accounts found');
 
     const addr = accounts[0];
