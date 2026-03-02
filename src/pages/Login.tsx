@@ -7,20 +7,24 @@ import {
   Lock,
   ArrowRight,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Wallet,
+  CheckCircle2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function Login() {
-  const { login, signup } = useAuth();
+  const { login, signup, connectWalletAndLogin } = useAuth();
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'Sponsor' | 'Student'>('Student');
   const [loading, setLoading] = useState(false);
+  const [walletLoading, setWalletLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showWalletRolePicker, setShowWalletRolePicker] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +45,21 @@ export default function Login() {
     }
   };
 
+  const handleWalletLogin = async (selectedRole: 'Sponsor' | 'Student') => {
+    setWalletLoading(true);
+    setError(null);
+    setShowWalletRolePicker(false);
+    try {
+      await connectWalletAndLogin(selectedRole);
+      navigate('/dashboard');
+    } catch (err: any) {
+      console.error(err);
+      setError('Wallet login failed. Please try again.');
+    } finally {
+      setWalletLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-6 relative overflow-hidden">
       {/* Decorative Background Elements */}
@@ -53,7 +72,7 @@ export default function Login() {
         className="w-full max-w-[480px] z-10"
       >
         <div className="bg-white/80 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)]">
-          <header className="text-center mb-10">
+          <header className="text-center mb-8">
             <div className="w-16 h-16 bg-blue-900 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-100">
               <span className="text-white font-black text-3xl italic">C</span>
             </div>
@@ -65,7 +84,64 @@ export default function Login() {
             </p>
           </header>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Wallet Login — Primary CTA */}
+          <div className="mb-6">
+            {!showWalletRolePicker ? (
+              <button
+                onClick={() => setShowWalletRolePicker(true)}
+                disabled={walletLoading}
+                className="w-full py-4 bg-blue-900 text-white rounded-2xl font-black shadow-xl shadow-blue-100 hover:bg-black transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+              >
+                {walletLoading ? (
+                  <Loader2 className="animate-spin" size={20} />
+                ) : (
+                  <>
+                    <Wallet size={20} />
+                    Sign In with Pera Wallet
+                  </>
+                )}
+              </button>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-5 bg-blue-50 rounded-2xl border border-blue-100 space-y-3"
+              >
+                <p className="text-xs font-black text-blue-700 uppercase tracking-widest text-center">Select your role</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => handleWalletLogin('Student')}
+                    className="p-4 bg-white rounded-xl border-2 border-emerald-400 flex flex-col items-center gap-2 hover:bg-emerald-50 transition-all"
+                  >
+                    <UserCircle size={24} className="text-emerald-600" />
+                    <span className="text-xs font-black text-emerald-800">Student</span>
+                  </button>
+                  <button
+                    onClick={() => handleWalletLogin('Sponsor')}
+                    className="p-4 bg-white rounded-xl border-2 border-blue-900 flex flex-col items-center gap-2 hover:bg-blue-50 transition-all"
+                  >
+                    <ShieldCheck size={24} className="text-blue-900" />
+                    <span className="text-xs font-black text-blue-900">Sponsor</span>
+                  </button>
+                </div>
+                <button
+                  onClick={() => setShowWalletRolePicker(false)}
+                  className="w-full text-xs text-gray-400 hover:text-gray-600 font-bold pt-1"
+                >
+                  Cancel
+                </button>
+              </motion.div>
+            )}
+          </div>
+
+          {/* Divider */}
+          <div className="relative flex items-center gap-4 mb-6">
+            <div className="flex-1 h-px bg-gray-100"></div>
+            <span className="text-xs font-black text-gray-300 uppercase tracking-widest">or use email</span>
+            <div className="flex-1 h-px bg-gray-100"></div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
             <AnimatePresence mode="wait">
               {error && (
                 <motion.div
@@ -121,8 +197,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => setRole('Student')}
-                    className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${role === 'Student' ? 'border-emerald-500 bg-emerald-50 text-emerald-900' : 'border-gray-50 bg-gray-50/50 text-gray-400'
-                      }`}
+                    className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${role === 'Student' ? 'border-emerald-500 bg-emerald-50 text-emerald-900' : 'border-gray-50 bg-gray-50/50 text-gray-400'}`}
                   >
                     <UserCircle size={24} />
                     <span className="text-xs font-black">Student</span>
@@ -130,8 +205,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => setRole('Sponsor')}
-                    className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${role === 'Sponsor' ? 'border-blue-900 bg-blue-50 text-blue-900' : 'border-gray-50 bg-gray-50/50 text-gray-400'
-                      }`}
+                    className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${role === 'Sponsor' ? 'border-blue-900 bg-blue-50 text-blue-900' : 'border-gray-50 bg-gray-50/50 text-gray-400'}`}
                   >
                     <ShieldCheck size={24} />
                     <span className="text-xs font-black">Sponsor</span>
@@ -143,20 +217,20 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-blue-900 text-white rounded-2xl font-black shadow-xl shadow-blue-100 hover:bg-black transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-4 bg-gray-900 text-white rounded-2xl font-black hover:bg-black transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading ? (
                 <Loader2 className="animate-spin" size={20} />
               ) : (
                 <>
-                  {isLogin ? 'Log In' : 'Create Account'}
+                  {isLogin ? 'Log In with Email' : 'Create Account'}
                   <ArrowRight size={20} />
                 </>
               )}
             </button>
           </form>
 
-          <div className="mt-8 pt-8 border-t border-gray-50 text-center">
+          <div className="mt-6 pt-6 border-t border-gray-50 text-center">
             <button
               onClick={() => setIsLogin(!isLogin)}
               className="text-sm font-bold text-gray-500 hover:text-blue-900 transition-colors"

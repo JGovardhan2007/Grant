@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { LogOut, Wallet, User as UserIcon } from 'lucide-react';
+import { LogOut, Wallet, User as UserIcon, Unlink } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -10,11 +10,11 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export default function Navbar() {
-  const { user, role, logout, connectWallet, address } = useAuth();
+  const { user, role, logout, connectWallet, disconnectWallet, address } = useAuth();
   const location = useLocation();
 
   const shortenedAddress = address ? `${address.substring(0, 4)}...${address.substring(address.length - 4)}` : '';
-  const userDisplayName = user?.email?.split('@')[0] || 'User';
+  const userDisplayName = user?.email?.split('@')[0] || (address ? shortenedAddress : 'User');
 
   if (location.pathname === '/') return null;
 
@@ -43,19 +43,27 @@ export default function Navbar() {
           <span className="text-xs font-bold text-gray-600">{userDisplayName}</span>
         </div>
 
-        {/* Pera Wallet Connection */}
-        <button
-          onClick={address ? undefined : connectWallet}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all",
-            address
-              ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
-              : "bg-blue-900 text-white hover:bg-black shadow-lg shadow-blue-100"
-          )}
-        >
-          <Wallet size={14} />
-          {address ? shortenedAddress : "Connect Wallet"}
-        </button>
+        {/* Pera Wallet Connection — clickable to disconnect */}
+        {address ? (
+          <button
+            onClick={disconnectWallet}
+            title="Click to disconnect wallet"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 group"
+          >
+            <Wallet size={14} className="group-hover:hidden" />
+            <Unlink size={14} className="hidden group-hover:block" />
+            <span className="group-hover:hidden">{shortenedAddress}</span>
+            <span className="hidden group-hover:inline">Disconnect</span>
+          </button>
+        ) : (
+          <button
+            onClick={connectWallet}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all bg-blue-900 text-white hover:bg-black shadow-lg shadow-blue-100"
+          >
+            <Wallet size={14} />
+            Connect Wallet
+          </button>
+        )}
 
         {/* Logout Button */}
         <button

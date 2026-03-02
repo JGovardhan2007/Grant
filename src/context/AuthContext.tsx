@@ -4,6 +4,7 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signInAnonymously,
   signOut,
   User
 } from 'firebase/auth';
@@ -20,6 +21,8 @@ interface AuthContextType {
   setRole: (role: Role) => void;
   address: string | null;
   connectWallet: () => Promise<void>;
+  connectWalletAndLogin: (role: Role) => Promise<void>;
+  disconnectWallet: () => Promise<void>;
   signTransaction: (txns: any[]) => Promise<Uint8Array[]>;
   login: (email: string, pass: string) => Promise<void>;
   signup: (email: string, pass: string, role: Role) => Promise<void>;
@@ -39,7 +42,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
-        // Fetch role from Firestore
+        // Try to fetch role from Firestore wallet-based user doc first, then UID doc
+        const walletAddr = address;
+        if (walletAddr) {
+          const walletDoc = await getDoc(doc(db, 'walletUsers', walletAddr));
+          if (walletDoc.exists()) {
+            setRoleState(walletDoc.data().role as Role);
+            setLoading(false);
+            return;
+          }
+        }
         const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
         if (userDoc.exists()) {
           setRoleState(userDoc.data().role as Role);
@@ -50,7 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     });
 
-    // Reconnect to Pera Wallet session on mount or login
+    // Reconnect to Pera Wallet session on mount
     const reconnectPera = async () => {
       try {
         const accounts = await peraWallet.reconnectSession();
@@ -65,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     reconnectPera();
 
     return () => unsubscribe();
-  }, [user]); // Re-run when user changes (login/logout) to restore wallet address
+  }, []);
 
   const login = async (email: string, pass: string) => {
     await signInWithEmailAndPassword(auth, email, pass);
@@ -83,6 +95,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  /**
+   * Connect Pera Wallet and use it as primary identity (wallet-based auth).
+   * Signs in anonymously with Firebase (for Firestore access) and stores
+   * the wallet address as the unique identifier under walletUsers/{address}.
+   */
+  const connectWalletAndLogin = async (selectedRole: Role) => {
+    try {
+      const accounts = await peraWallet.connect();
+      if (accounts.length === 0) return;
+
+      const walletAddress = accounts[0];
+      setAddress(walletAddress);
+
+      // Sign in anonymously to get a Firebase UID (required for Firestore rules)
+      const anonRes = await signInAnonymously(auth);
+
+      // Create or update the walletUsers document
+      const walletDocRef = doc(db, 'walletUsers', walletAddress);
+      const walletDoc = await getDoc(walletDocRef);
+
+      if (!walletDoc.exists()) {
+        await setDoc(walletDocRef, {
+          walletAddress,
+          role: selectedRole,
+          firebaseUid: anonRes.user.uid,
+          createdAt: new Date().toISOString()
+        });
+        setRoleState(selectedRole);
+      } else {
+        setRoleState(walletDoc.data().role as Role);
+      }
+    } catch (error) {
+      console.error('Wallet login failed:', error);
+      throw error;
+    }
+  };
+
   const connectWallet = async () => {
     try {
       const accounts = await peraWallet.connect();
@@ -92,6 +141,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Wallet connection failed:', error);
     }
+  };
+
+  /**
+   * Disconnect Pera Wallet — clears address so users can switch wallets.
+   */
+  const disconnectWallet = async () => {
+    try {
+      await peraWallet.disconnect();
+    } catch (e) {
+      // Ignore disconnect errors
+    }
+    setAddress(null);
   };
 
   const signTransaction = async (txns: any[]) => {
@@ -112,13 +173,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     await signOut(auth);
-    // Remove peraWallet.disconnect() to keep session alive for re-login
+    try { await peraWallet.disconnect(); } catch (e) { /* ignore */ }
     setAddress(null);
     setRoleState(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, role, setRole, address, connectWallet, signTransaction, login, signup, logout, loading }}>
+    <AuthContext.Provider value={{
+      user, role, setRole, address,
+      connectWallet, connectWalletAndLogin, disconnectWallet,
+      signTransaction, login, signup, logout, loading
+    }}>
       {children}
     </AuthContext.Provider>
   );
