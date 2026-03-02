@@ -2,10 +2,29 @@ import React from 'react';
 import { Award, ShieldCheck, CheckCircle2, ExternalLink } from 'lucide-react';
 import { BADGES } from '../data/mockData';
 import { motion } from 'motion/react';
+import { useAuth } from '../context/AuthContext';
+import { mintBadge, algodClient } from '../lib/algorand';
 
 export default function NFTBadges() {
-  const handleMint = (badgeName: string) => {
-    alert(`Minting ${badgeName} NFT on Algorand... Success!`);
+  const { address, signTransaction } = useAuth();
+
+  const handleMint = async (badge: any) => {
+    if (!address) {
+      alert('Please connect your wallet first!');
+      return;
+    }
+
+    try {
+      const unitName = badge.name.substring(0, 8).toUpperCase();
+      const txn = await mintBadge(address, badge.name, unitName, 'https://chaingrant.io/metadata/' + badge.id);
+      const signedTxns = await signTransaction([txn]);
+      await algodClient.sendRawTransaction(signedTxns).do();
+
+      alert(`Success! ${badge.name} NFT minted on Algorand Testnet.`);
+    } catch (error) {
+      console.error('Minting failed:', error);
+      alert('Failed to mint NFT. Make sure you have enough Testnet Algos.');
+    }
   };
 
   return (
@@ -22,7 +41,7 @@ export default function NFTBadges() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {BADGES.map((badge, index) => (
-          <motion.div 
+          <motion.div
             key={badge.id}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -39,7 +58,7 @@ export default function NFTBadges() {
             <div className="p-8">
               <h3 className="text-2xl font-black text-blue-900 mb-1">{badge.name}</h3>
               <p className="text-sm font-bold text-gray-400 uppercase tracking-tighter mb-4">{badge.project}</p>
-              
+
               <div className="space-y-3 mb-8">
                 <div className="flex items-center justify-between text-xs font-bold text-gray-500">
                   <span>Minted On</span>
@@ -56,8 +75,8 @@ export default function NFTBadges() {
                 </div>
               </div>
 
-              <button 
-                onClick={() => handleMint(badge.name)}
+              <button
+                onClick={() => handleMint(badge)}
                 className="w-full py-4 bg-blue-900 text-white rounded-2xl font-black hover:bg-blue-800 transition-all shadow-lg shadow-blue-100"
               >
                 Mint NFT Badge
@@ -79,7 +98,7 @@ export default function NFTBadges() {
           <div className="flex -space-x-4">
             {[1, 2, 3, 4].map(i => (
               <div key={i} className="w-16 h-16 rounded-full border-4 border-blue-900 bg-blue-800 flex items-center justify-center text-2xl shadow-xl">
-                {['🏆', '💻', '🌟', '🛡️'][i-1]}
+                {['🏆', '💻', '🌟', '🛡️'][i - 1]}
               </div>
             ))}
           </div>

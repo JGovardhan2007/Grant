@@ -7,6 +7,41 @@ const algodPort = 443;
 
 export const algodClient = new algosdk.Algodv2(algodToken, algodServer, algodPort);
 
+/**
+ * Sends a payment transaction on Algorand Testnet.
+ */
+export const sendPayment = async (from: string, to: string, amount: number, note?: string) => {
+  const params = await algodClient.getTransactionParams().do();
+  const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+    from: from as string,
+    to: to as string,
+    amount: algosdk.algosToMicroalgos(amount),
+    note: note ? new TextEncoder().encode(note) : undefined,
+    suggestedParams: params,
+  });
+
+  return txn;
+};
+
+/**
+ * Mints a non-transferable NFT badge (ASA).
+ */
+export const mintBadge = async (from: string, assetName: string, unitName: string, url: string) => {
+  const params = await algodClient.getTransactionParams().do();
+  const txn = algosdk.makeAssetCreateTxnWithSuggestedParamsFromObject({
+    from: from as string,
+    assetName,
+    unitName,
+    assetURL: url,
+    total: 1,
+    decimals: 0,
+    defaultFrozen: true,
+    suggestedParams: params,
+  });
+
+  return txn;
+};
+
 // Utility to shorten addresses for display
 export const formatAddress = (address: string) => {
   if (!address) return '';

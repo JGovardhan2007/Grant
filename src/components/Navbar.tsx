@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, PlusCircle, FileText, Globe, Award, LogOut, Wallet } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { LogOut, Wallet, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -10,48 +10,60 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export default function Navbar() {
-  const { role, logout, connectWallet, address } = useAuth();
+  const { user, role, logout, connectWallet, address } = useAuth();
   const location = useLocation();
 
   const shortenedAddress = address ? `${address.substring(0, 4)}...${address.substring(address.length - 4)}` : '';
+  const userDisplayName = user?.email?.split('@')[0] || 'User';
 
   if (location.pathname === '/') return null;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-blue-100 z-50 flex items-center justify-between px-6">
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-blue-900 rounded-lg flex items-center justify-center">
+    <nav className="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-blue-100 z-50 flex items-center justify-between px-6">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 bg-blue-900 rounded-lg flex items-center justify-center shadow-lg shadow-blue-100">
           <span className="text-white font-bold text-xl italic">C</span>
         </div>
-        <span className="text-xl font-bold text-blue-900 tracking-tight">ChainGrant</span>
+        <span className="text-xl font-black text-blue-900 tracking-tighter">ChainGrant</span>
       </div>
 
       <div className="flex items-center gap-4">
+        {/* User Role Badge */}
         <div className={cn(
-          "px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5",
+          "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5",
           role === 'Sponsor' ? "bg-blue-100 text-blue-800" : "bg-emerald-100 text-emerald-800"
         )}>
-          <span className={cn("w-2 h-2 rounded-full", role === 'Sponsor' ? "bg-blue-600" : "bg-emerald-600")}></span>
+          <span className={cn("w-1.5 h-1.5 rounded-full", role === 'Sponsor' ? "bg-blue-600" : "bg-emerald-600")}></span>
           {role}
         </div>
 
+        {/* Firebase User Info */}
+        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-xl border border-gray-100">
+          <UserIcon size={14} className="text-gray-400" />
+          <span className="text-xs font-bold text-gray-600">{userDisplayName}</span>
+        </div>
+
+        {/* Pera Wallet Connection */}
         <button
           onClick={address ? undefined : connectWallet}
           className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-            address ? "bg-emerald-50 text-emerald-700" : "bg-blue-50 text-blue-900 hover:bg-blue-100"
+            "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all",
+            address
+              ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+              : "bg-blue-900 text-white hover:bg-black shadow-lg shadow-blue-100"
           )}
         >
-          <Wallet size={16} />
-          {address ? shortenedAddress : "Connect Pera Wallet"}
+          <Wallet size={14} />
+          {address ? shortenedAddress : "Connect Wallet"}
         </button>
 
+        {/* Logout Button */}
         <button
           onClick={logout}
-          className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-red-600 rounded-lg text-sm font-medium transition-colors"
+          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+          title="Logout"
         >
-          <LogOut size={16} />
-          Switch Role
+          <LogOut size={20} />
         </button>
       </div>
     </nav>

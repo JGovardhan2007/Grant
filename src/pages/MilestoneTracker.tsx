@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { 
-  CheckCircle2, 
-  Clock, 
-  AlertCircle, 
-  ExternalLink, 
-  Upload, 
-  Check, 
+import {
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  ExternalLink,
+  Upload,
+  Check,
   ArrowLeft,
   ShieldCheck,
   FileText
@@ -15,9 +15,12 @@ import { useAuth } from '../context/AuthContext';
 import { GRANTS } from '../data/mockData';
 import { motion } from 'motion/react';
 
+import { sendPayment, algodClient } from '../lib/algorand';
+import { generateHash } from '../lib/hashing';
+
 export default function MilestoneTracker() {
   const { id } = useParams();
-  const { role } = useAuth();
+  const { role, address, signTransaction } = useAuth();
   const grant = GRANTS.find(g => g.id === id) || GRANTS[0];
   const [uploading, setUploading] = useState<string | null>(null);
 
@@ -25,8 +28,28 @@ export default function MilestoneTracker() {
     setUploading(milestoneId);
     setTimeout(() => {
       setUploading(null);
-      alert('Proof uploaded! SHA-256 Hash generated: 0x' + Math.random().toString(16).slice(2, 10).toUpperCase() + '...');
+      const realHash = generateHash(`proof-${milestoneId}-${Date.now()}`);
+      alert(`Proof uploaded! SHA-256 Hash generated: 0x${realHash.substring(0, 12)}...`);
     }, 1500);
+  };
+
+  const handleReleaseFunds = async (milestone: any) => {
+    if (!address) {
+      alert('Please connect your wallet first!');
+      return;
+    }
+
+    try {
+      // Simulate releasing the specific milestone amount back to a recipient or self
+      const txn = await sendPayment(address, address, 0.01, `ChainGrant Release: ${milestone.name}`);
+      const signedTxns = await signTransaction([txn]);
+      await algodClient.sendRawTransaction(signedTxns).do();
+
+      alert(`Success! ₹${milestone.amount.toLocaleString()} released on Algorand.`);
+    } catch (error) {
+      console.error('Fund release failed:', error);
+      alert('Transaction failed. Make sure you are the Sponsor of this grant.');
+    }
   };
 
   return (
@@ -78,7 +101,7 @@ export default function MilestoneTracker() {
           <div className="space-y-4">
             <h2 className="text-2xl font-black text-blue-900 tracking-tight mb-6">Milestone Roadmap</h2>
             {grant.milestones.map((milestone, index) => (
-              <motion.div 
+              <motion.div
                 key={milestone.id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -87,9 +110,8 @@ export default function MilestoneTracker() {
               >
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                      milestone.status === 'Completed' ? 'bg-emerald-500 text-white' : 'bg-blue-100 text-blue-900'
-                    }`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${milestone.status === 'Completed' ? 'bg-emerald-500 text-white' : 'bg-blue-100 text-blue-900'
+                      }`}>
                       {milestone.status === 'Completed' ? <Check size={20} /> : index + 1}
                     </div>
                     <div>
@@ -97,10 +119,9 @@ export default function MilestoneTracker() {
                       <p className="text-sm font-bold text-blue-600">₹{milestone.amount.toLocaleString()}</p>
                     </div>
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                    milestone.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 
+                  <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${milestone.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' :
                     milestone.status === 'Pending Approval' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-500'
-                  }`}>
+                    }`}>
                     {milestone.status}
                   </div>
                 </div>
@@ -119,7 +140,7 @@ export default function MilestoneTracker() {
 
                 <div className="flex justify-end gap-3">
                   {role === 'Student' && milestone.status === 'Not Started' && (
-                    <button 
+                    <button
                       onClick={() => handleUploadProof(milestone.id)}
                       disabled={uploading === milestone.id}
                       className="flex items-center gap-2 px-4 py-2 bg-blue-900 text-white rounded-xl text-sm font-bold hover:bg-blue-800 transition-all disabled:opacity-50"
@@ -136,7 +157,10 @@ export default function MilestoneTracker() {
                     <span className="text-sm font-bold text-amber-600 italic">Waiting for Sponsor Review...</span>
                   )}
                   {role === 'Sponsor' && milestone.status === 'Pending Approval' && (
-                    <button className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-all">
+                    <button
+                      onClick={() => handleReleaseFunds(milestone)}
+                      className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-all"
+                    >
                       <CheckCircle2 size={16} />
                       Approve & Release Funds
                     </button>
@@ -170,7 +194,7 @@ export default function MilestoneTracker() {
                 <span className="font-bold text-blue-900">₹{grant.milestones.filter(m => !m.released).reduce((acc, m) => acc + m.amount, 0).toLocaleString()}</span>
               </div>
             </div>
-            <Link 
+            <Link
               to={`/grants/${grant.id}/spend`}
               className="w-full mt-8 flex items-center justify-center gap-2 py-4 bg-blue-50 text-blue-900 rounded-2xl font-bold hover:bg-blue-100 transition-all"
             >

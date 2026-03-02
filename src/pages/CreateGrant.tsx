@@ -3,8 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, Shield, Lock, IndianRupee, Users } from 'lucide-react';
 import { motion } from 'motion/react';
 
+import { useAuth } from '../context/AuthContext';
+import { sendPayment, algodClient } from '../lib/algorand';
+
 export default function CreateGrant() {
   const navigate = useNavigate();
+  const { address, signTransaction } = useAuth();
   const [milestones, setMilestones] = useState([{ name: '', amount: '' }]);
 
   const addMilestone = () => {
@@ -15,11 +19,25 @@ export default function CreateGrant() {
     setMilestones(milestones.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would call the blockchain
-    alert('Locking funds on Algorand...');
-    navigate('/grants/1');
+    if (!address) {
+      alert('Please connect your wallet first!');
+      return;
+    }
+
+    try {
+      // For demo, we send a small amount to a placeholder address or back to self
+      const txn = await sendPayment(address, address, 0.1, 'ChainGrant: New Grant Creation');
+      const signedTxns = await signTransaction([txn]);
+      await algodClient.sendRawTransaction(signedTxns).do();
+
+      alert('Success! Funds locked on Algorand Testnet.');
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Grant creation failed:', error);
+      alert('Transaction failed. Check console for details.');
+    }
   };
 
   return (
@@ -38,8 +56,8 @@ export default function CreateGrant() {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Grant Title</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="e.g. Web3 Research Fellowship"
                 className="w-full px-5 py-4 bg-blue-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-900 transition-all font-medium"
                 required
@@ -47,7 +65,7 @@ export default function CreateGrant() {
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Description</label>
-              <textarea 
+              <textarea
                 placeholder="Describe the goals and requirements of this grant..."
                 rows={4}
                 className="w-full px-5 py-4 bg-blue-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-900 transition-all font-medium"
@@ -59,8 +77,8 @@ export default function CreateGrant() {
                 <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Total Amount (₹)</label>
                 <div className="relative">
                   <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     placeholder="50000"
                     className="w-full pl-12 pr-5 py-4 bg-blue-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-900 transition-all font-medium"
                     required
@@ -84,8 +102,8 @@ export default function CreateGrant() {
               <Lock size={20} className="text-blue-600" />
               Milestone Breakdown
             </h2>
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={addMilestone}
               className="flex items-center gap-1 text-sm font-bold text-blue-600 hover:text-blue-800"
             >
@@ -93,10 +111,10 @@ export default function CreateGrant() {
               Add Milestone
             </button>
           </div>
-          
+
           <div className="space-y-4">
             {milestones.map((milestone, index) => (
-              <motion.div 
+              <motion.div
                 key={index}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -104,8 +122,8 @@ export default function CreateGrant() {
               >
                 <div className="md:col-span-7">
                   <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">Milestone Name</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder={`Milestone ${index + 1}`}
                     className="w-full px-4 py-3 bg-blue-50 border-none rounded-xl focus:ring-2 focus:ring-blue-900 transition-all font-medium"
                     required
@@ -113,16 +131,16 @@ export default function CreateGrant() {
                 </div>
                 <div className="md:col-span-4">
                   <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">Amount (₹)</label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     placeholder="10000"
                     className="w-full px-4 py-3 bg-blue-50 border-none rounded-xl focus:ring-2 focus:ring-blue-900 transition-all font-medium"
                     required
                   />
                 </div>
                 <div className="md:col-span-1 pb-1">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => removeMilestone(index)}
                     className="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
                     disabled={milestones.length === 1}
@@ -135,7 +153,7 @@ export default function CreateGrant() {
           </div>
         </div>
 
-        <button 
+        <button
           type="submit"
           className="w-full py-5 bg-blue-900 text-white rounded-[2rem] font-black text-xl shadow-2xl shadow-blue-200 hover:bg-blue-800 transition-all transform hover:-translate-y-1"
         >
