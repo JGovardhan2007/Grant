@@ -1,0 +1,27 @@
+Project 3: Transparent Grant and Fund Tracking System for Student Projects
+Difficulty: Intermediate
+Estimated Time: 14–16 hours
+Description:
+Build a blockchain-based grant and fund tracking system using Algorand to ensure
+transparent, milestone-based allocation and utilization of student project funds. The
+system should provide clear visibility into how funds are released and spent.
+What Students Will Build:
+Grant creation and funding interface
+Smart contract-based milestone configuration
+Milestone approval and fund release mechanism
+Real-time transaction dashboard
+Optional DAO-style voting interface for approvals
+Technical Components:
+Frontend:
+Algorand SDK for transaction handling
+Smart contracts for milestone-based fund disbursement
+Optional backend for proposal and milestone metadata
+Wallet integration for sponsors and project teams
+Learning Outcomes:
+Designing milestone-based smart contracts
+Building transparent financial dashboards
+Understanding escrow and conditional payments
+Implementing governance mechanisms
+Real-World Application:
+Enhances accountability in grant management, builds trust between sponsors and
+student teams, and promotes responsible fund utilization within institutions.
