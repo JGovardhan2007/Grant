@@ -19,6 +19,12 @@ export default function CreateGrant() {
   const [milestones, setMilestones] = useState([{ name: '', amount: '' }]);
   const [loading, setLoading] = useState(false);
 
+  // Derived: compute sum of milestone amounts
+  const milestoneSum = milestones.reduce((sum, m) => sum + (Number(m.amount) || 0), 0);
+  const totalNum = Number(totalAmount) || 0;
+  const remainder = totalNum - milestoneSum;
+  const isBalanced = totalNum > 0 && remainder === 0;
+
   const addMilestone = () => {
     setMilestones([...milestones, { name: '', amount: '' }]);
   };
@@ -37,6 +43,12 @@ export default function CreateGrant() {
     e.preventDefault();
     if (!address) {
       alert('Please connect your Algorand wallet first!');
+      return;
+    }
+
+    // Validate milestone sum equals total amount
+    if (!isBalanced) {
+      alert(`Milestone amounts (₹${milestoneSum.toLocaleString()}) must equal the total grant pool (₹${totalNum.toLocaleString()}).`);
       return;
     }
 
@@ -219,12 +231,44 @@ export default function CreateGrant() {
               </motion.div>
             ))}
           </div>
+
+          {/* Live Balance Indicator */}
+          {totalNum > 0 && (
+            <div className={`mt-6 p-5 rounded-2xl border-2 transition-all ${isBalanced ? 'bg-emerald-50 border-emerald-200'
+                : remainder < 0 ? 'bg-rose-50 border-rose-200'
+                  : 'bg-amber-50 border-amber-200'
+              }`}>
+              <div className="flex justify-between items-center mb-3">
+                <span className={`text-[10px] font-black uppercase tracking-widest ${isBalanced ? 'text-emerald-600' : remainder < 0 ? 'text-rose-600' : 'text-amber-600'
+                  }`}>
+                  {isBalanced
+                    ? '✓ Balanced — Ready to submit'
+                    : remainder < 0
+                      ? `✗ Over-allocated by ₹${Math.abs(remainder).toLocaleString()}`
+                      : `₹${remainder.toLocaleString()} still unallocated`}
+                </span>
+                <span className="text-xs font-black text-gray-400">
+                  ₹{milestoneSum.toLocaleString()} / ₹{totalNum.toLocaleString()}
+                </span>
+              </div>
+              <div className="w-full h-2 bg-white rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${isBalanced ? 'bg-emerald-500' : remainder < 0 ? 'bg-rose-500' : 'bg-amber-400'
+                    }`}
+                  style={{ width: `${Math.min((milestoneSum / totalNum) * 100, 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         <button
           type="submit"
-          disabled={loading}
-          className="w-full py-6 bg-blue-900 text-white rounded-[2.5rem] font-black text-2xl shadow-3xl shadow-blue-200/50 hover:bg-black transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3 disabled:opacity-70"
+          disabled={loading || !isBalanced}
+          className={`w-full py-6 rounded-[2.5rem] font-black text-2xl shadow-3xl transition-all transform flex items-center justify-center gap-3 ${isBalanced
+            ? 'bg-blue-900 text-white shadow-blue-200/50 hover:bg-black hover:-translate-y-1'
+            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            } disabled:opacity-70`}
         >
           {loading ? (
             <>
