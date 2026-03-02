@@ -56,7 +56,13 @@ export default function CreateGrant() {
     setLoading(true);
     try {
       const params = await algodClient.getTransactionParams().do();
-      const microAlgo = BigInt(Math.round(Number(totalAmount) * 1000));
+
+      // Convert INR to microALGO (1 INR = 1000 microALGO for testnet demo)
+      // Add 100,000 microALGO (0.1 ALGO) Minimum Balance Requirement (MBR)
+      const MIN_BALANCE_REQ = 100_000n;
+      const grantAmount = BigInt(Math.round(Number(totalAmount) * 1000));
+      const microAlgo = grantAmount + MIN_BALANCE_REQ;
+
       const methodSelector = algosdk.ABIMethod.fromSignature('initialize_grant(address,pay)void').getSelector();
       const encodedStudentAddr = algosdk.ABIAddressType.from('address').encode(studentAddress);
 
