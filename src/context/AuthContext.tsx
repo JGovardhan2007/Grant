@@ -63,21 +63,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Phase 2: Pera Wallet reconnect (independent of Firebase)
     const reconnectPera = async () => {
+      // If no saved wallet session in localStorage, skip Pera reconnect entirely
+      // (avoids reconnectSession() hanging indefinitely with no prior session)
+      const hasStoredSession = Object.keys(localStorage).some(k => k.startsWith('chainGrant_role_'));
+      if (!hasStoredSession) {
+        setWalletReady(true);
+        return;
+      }
+
+      // Safety timeout: if Pera doesn't respond in 4s, unblock the app anyway
+      const safetyTimer = setTimeout(() => setWalletReady(true), 4000);
+
       try {
         const accounts = await peraWallet.reconnectSession();
+        clearTimeout(safetyTimer);
         if (accounts.length > 0) {
           const walletAddr = accounts[0];
           setAddress(walletAddr);
-          // Restore role and name from localStorage
+          // Restore role and display name from localStorage
           const storedRole = localStorage.getItem(WALLET_ROLE_KEY(walletAddr)) as Role | null;
           const storedName = localStorage.getItem(WALLET_NAME_KEY(walletAddr));
           if (storedRole) setRoleState(storedRole);
           if (storedName) setDisplayName(storedName);
         }
       } catch (e) {
-        console.log('Pera reconnect failed (normal if not previously connected)', e);
+        clearTimeout(safetyTimer);
+        console.log('Pera reconnect failed (normal on fresh login)', e);
       } finally {
-        // Always mark wallet as ready — even if reconnect failed
         setWalletReady(true);
       }
     };

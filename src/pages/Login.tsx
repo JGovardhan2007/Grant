@@ -48,15 +48,17 @@ export default function Login() {
   };
 
   const handleWalletLogin = async (selectedRole: 'Sponsor' | 'Student') => {
-    if (!walletUsername.trim()) {
-      setError('Please enter your name before connecting your wallet.');
+    if (!walletUsername.trim() || !walletUsername.includes('@')) {
+      setError('Please enter a valid email address before connecting your wallet.');
       return;
     }
     setWalletLoading(true);
     setError(null);
     setShowWalletRolePicker(false);
     try {
-      await connectWalletAndLogin(selectedRole, walletUsername.trim());
+      // Derive display name from email (part before @)
+      const derivedName = walletUsername.trim().split('@')[0];
+      await connectWalletAndLogin(selectedRole, derivedName);
       navigate('/dashboard');
     } catch (err: any) {
       console.error(err);
@@ -113,11 +115,11 @@ export default function Login() {
                 animate={{ opacity: 1, y: 0 }}
                 className="p-5 bg-blue-50 rounded-2xl border border-blue-100 space-y-3"
               >
-                <p className="text-xs font-black text-blue-700 uppercase tracking-widest text-center">Your Name &amp; Role</p>
-                {/* Username field */}
+                <p className="text-xs font-black text-blue-700 uppercase tracking-widest text-center">Your Email &amp; Role</p>
+                {/* Email field */}
                 <input
-                  type="text"
-                  placeholder="Enter your name (e.g. Govardhan)"
+                  type="email"
+                  placeholder="your@email.com"
                   value={walletUsername}
                   onChange={(e) => setWalletUsername(e.target.value)}
                   className="w-full px-4 py-3 bg-white rounded-xl border border-blue-200 text-sm font-bold text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder:text-gray-400"
