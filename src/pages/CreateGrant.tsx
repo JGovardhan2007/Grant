@@ -48,7 +48,6 @@ export default function CreateGrant() {
       return;
     }
 
-    // Validate milestone sum equals total amount
     if (!isBalanced) {
       alert(`Milestone amounts (₹${milestoneSum.toLocaleString()}) must equal the total grant pool (₹${totalNum.toLocaleString()}).`);
       return;
@@ -56,16 +55,20 @@ export default function CreateGrant() {
 
     setLoading(true);
     try {
-      // 1. Get suggested params
       const params = await algodClient.getTransactionParams().do();
-
-      // Convert INR to microALGO for testnet demo (1 INR = 0.001 ALGO = 1000 microALGO)
       const microAlgo = BigInt(Math.round(Number(totalAmount) * 1000));
-
-      // 2. Encode student address for ABI call
       const methodSelector = algosdk.ABIMethod.fromSignature('initialize_grant(address,pay)void').getSelector();
       const encodedStudentAddr = algosdk.ABIAddressType.from('address').encode(studentAddress);
 
+      // Payment FIRST (index 0) — ABI reads 'pay' arg at group_index - 1
+      const paymentTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+        sender: address as string,
+        receiver: CHAIN_GRANT_APP_ADDR,
+        amount: microAlgo,
+        suggestedParams: params,
+      });
+
+      // App call SECOND (index 1)
       const appCallTxn = algosdk.makeApplicationCallTxnFromObject({
         sender: address as string,
         suggestedParams: params,
@@ -74,23 +77,11 @@ export default function CreateGrant() {
         appArgs: [methodSelector, encodedStudentAddr],
       });
 
-      // 3. Payment to lock funds in the contract escrow
-      const paymentTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-        sender: address as string,
-        receiver: CHAIN_GRANT_APP_ADDR,
-        amount: microAlgo,
-        suggestedParams: params,
-      });
-
-      // 4. Group both transactions
-      algosdk.assignGroupID([appCallTxn, paymentTxn]);
-
-      // 5. Sign both via wallet
-      const signedTxns = await signTransaction([appCallTxn, paymentTxn]);
+      algosdk.assignGroupID([paymentTxn, appCallTxn]);
+      const signedTxns = await signTransaction([paymentTxn, appCallTxn]);
       const sendResult = await algodClient.sendRawTransaction(signedTxns).do();
       const fundingTxId = sendResult.txid;
 
-      // 6. Save Metadata to Firestore
       await addDoc(collection(db, 'grants'), {
         title,
         description,
@@ -99,7 +90,7 @@ export default function CreateGrant() {
         studentAddress,
         sponsorEmail: user?.email,
         sponsorAddress: address,
-        fundingTxId: fundingTxId,
+        fundingTxId,
         status: 'Active',
         createdAt: new Date().toISOString(),
         milestones: milestones.map((m, i) => ({
@@ -108,15 +99,15 @@ export default function CreateGrant() {
           amount: Number(m.amount),
           status: 'Not Started',
           released: false,
-          proofHash: null
-        }))
+          proofHash: null,
+        })),
       });
 
       alert('Success! Grant created and funds locked on Algorand.');
       navigate('/dashboard');
     } catch (error) {
       console.error('Grant creation failed:', error);
-      alert('Creation failed. Make sure you signed the transaction and try again.');
+      alert('Creation failed. Make sure you signed both transactions and try again.');
     } finally {
       setLoading(false);
     }
@@ -162,7 +153,7 @@ export default function CreateGrant() {
                   required
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 md:col-span-2">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Student Algorand Wallet Address</label>
                 <input
                   type="text"
@@ -319,7 +310,7 @@ export default function CreateGrant() {
             </>
           ) : (
             <>
-              Authorize & Lock Funds
+              Authorize &amp; Lock Funds
               <Shield size={24} />
             </>
           )}
