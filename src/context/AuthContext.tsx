@@ -1,35 +1,29 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { PeraWalletConnect } from '@perawallet/connect';
-import {
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  User
-} from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db } from '../lib/firebase';
+import { onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { auth } from '../lib/firebase';
 
 const peraWallet = new PeraWalletConnect();
 
 type Role = 'Sponsor' | 'Student' | null;
 
-// localStorage helpers for wallet-based identity
-const WALLET_ROLE_KEY = (addr: string) => `chainGrant_role_${addr}`;
-const WALLET_NAME_KEY = (addr: string) => `chainGrant_name_${addr}`;
+// All wallet identity stored in localStorage keyed by wallet address
+const key = {
+  role: (addr: string) => `cg_role_${addr}`,
+  email: (addr: string) => `cg_email_${addr}`,
+};
 
 interface AuthContextType {
-  user: User | null;
+  user: User | null;            // Firebase user (legacy email login, kept for compat)
   role: Role;
-  displayName: string | null;
-  setRole: (role: Role) => void;
+  email: string | null;         // Email bound to the wallet at signup
+  displayName: string | null;   // Email prefix shown in navbar
   address: string | null;
+  signupWithWallet: (email: string, role: Role) => Promise<void>;
+  loginWithWallet: () => Promise<void>;
   connectWallet: () => Promise<void>;
-  connectWalletAndLogin: (role: Role, username: string) => Promise<void>;
   disconnectWallet: () => Promise<void>;
   signTransaction: (txns: any[]) => Promise<Uint8Array[]>;
-  login: (email: string, pass: string) => Promise<void>;
-  signup: (email: string, pass: string, role: Role) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }
@@ -39,56 +33,46 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRoleState] = useState<Role>(null);
-  const [displayName, setDisplayName] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
   const [address, setAddress] = useState<string | null>(null);
 
-  // Two-phase loading: wait for BOTH Firebase auth AND Pera reconnect
   const [authReady, setAuthReady] = useState(false);
   const [walletReady, setWalletReady] = useState(false);
   const loading = !authReady || !walletReady;
 
+  const displayName = email ? email.split('@')[0] : (address ? address.substring(0, 8) : null);
+
   useEffect(() => {
-    // Phase 1: Firebase auth
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    // Firebase auth listener (for legacy compat — not used in new wallet flow)
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
-      if (firebaseUser) {
-        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-        if (userDoc.exists()) {
-          setRoleState(userDoc.data().role as Role);
-          setDisplayName(userDoc.data().username || firebaseUser.email?.split('@')[0] || null);
-        }
-      }
       setAuthReady(true);
     });
 
-    // Phase 2: Pera Wallet reconnect (independent of Firebase)
+    // Pera Wallet reconnect on app start
     const reconnectPera = async () => {
-      // If no saved wallet session in localStorage, skip Pera reconnect entirely
-      // (avoids reconnectSession() hanging indefinitely with no prior session)
-      const hasStoredSession = Object.keys(localStorage).some(k => k.startsWith('chainGrant_role_'));
+      const hasStoredSession = Object.keys(localStorage).some(k => k.startsWith('cg_role_'));
       if (!hasStoredSession) {
         setWalletReady(true);
         return;
       }
 
-      // Safety timeout: if Pera doesn't respond in 4s, unblock the app anyway
-      const safetyTimer = setTimeout(() => setWalletReady(true), 4000);
-
+      // Safety timeout: never block the UI for more than 5 seconds
+      const safetyTimer = setTimeout(() => setWalletReady(true), 5000);
       try {
         const accounts = await peraWallet.reconnectSession();
         clearTimeout(safetyTimer);
         if (accounts.length > 0) {
-          const walletAddr = accounts[0];
-          setAddress(walletAddr);
-          // Restore role and display name from localStorage
-          const storedRole = localStorage.getItem(WALLET_ROLE_KEY(walletAddr)) as Role | null;
-          const storedName = localStorage.getItem(WALLET_NAME_KEY(walletAddr));
+          const addr = accounts[0];
+          setAddress(addr);
+          const storedRole = localStorage.getItem(key.role(addr)) as Role | null;
+          const storedEmail = localStorage.getItem(key.email(addr));
           if (storedRole) setRoleState(storedRole);
-          if (storedName) setDisplayName(storedName);
+          if (storedEmail) setEmail(storedEmail);
         }
       } catch (e) {
         clearTimeout(safetyTimer);
-        console.log('Pera reconnect failed (normal on fresh login)', e);
+        console.log('Pera reconnect skipped', e);
       } finally {
         setWalletReady(true);
       }
@@ -98,53 +82,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, []);
 
-  const login = async (email: string, pass: string) => {
-    await signInWithEmailAndPassword(auth, email, pass);
-  };
+  /**
+   * SIGNUP: collect email + role, then open Pera Wallet.
+   * Binds the email and role to the wallet address in localStorage.
+   */
+  const signupWithWallet = async (userEmail: string, selectedRole: Role) => {
+    const accounts = await peraWallet.connect();
+    if (accounts.length === 0) throw new Error('No wallet accounts found');
 
-  const signup = async (email: string, pass: string, initialRole: Role) => {
-    const res = await createUserWithEmailAndPassword(auth, email, pass);
-    if (res.user) {
-      const username = email.split('@')[0];
-      await setDoc(doc(db, 'users', res.user.uid), {
-        email,
-        username,
-        role: initialRole,
-        createdAt: new Date().toISOString()
-      });
-      setRoleState(initialRole);
-      setDisplayName(username);
-    }
+    const addr = accounts[0];
+    setAddress(addr);
+    setRoleState(selectedRole);
+    setEmail(userEmail);
+
+    localStorage.setItem(key.role(addr), selectedRole || '');
+    localStorage.setItem(key.email(addr), userEmail);
   };
 
   /**
-   * Connect Pera Wallet and bind a username to the wallet address.
-   * Role + username stored in localStorage — no Firebase Auth needed.
+   * LOGIN: open Pera Wallet, read stored email + role for that address.
+   * No email input needed — the wallet IS the identity.
    */
-  const connectWalletAndLogin = async (selectedRole: Role, username: string) => {
+  const loginWithWallet = async () => {
     const accounts = await peraWallet.connect();
-    if (accounts.length === 0) throw new Error('No accounts returned from wallet');
+    if (accounts.length === 0) throw new Error('No wallet accounts found');
 
-    const walletAddress = accounts[0];
-    setAddress(walletAddress);
-    setRoleState(selectedRole);
-    setDisplayName(username || walletAddress.substring(0, 8));
+    const addr = accounts[0];
+    const storedRole = localStorage.getItem(key.role(addr)) as Role | null;
+    const storedEmail = localStorage.getItem(key.email(addr));
 
-    // Persist role and username in localStorage keyed by wallet address
-    if (selectedRole) localStorage.setItem(WALLET_ROLE_KEY(walletAddress), selectedRole);
-    if (username) localStorage.setItem(WALLET_NAME_KEY(walletAddress), username);
+    if (!storedRole) {
+      // Wallet not registered — ask to sign up
+      throw new Error('WALLET_NOT_REGISTERED');
+    }
+
+    setAddress(addr);
+    setRoleState(storedRole);
+    if (storedEmail) setEmail(storedEmail);
   };
 
   const connectWallet = async () => {
     try {
       const accounts = await peraWallet.connect();
       if (accounts.length > 0) {
-        const walletAddr = accounts[0];
-        setAddress(walletAddr);
-        const storedRole = localStorage.getItem(WALLET_ROLE_KEY(walletAddr)) as Role;
-        const storedName = localStorage.getItem(WALLET_NAME_KEY(walletAddr));
+        const addr = accounts[0];
+        setAddress(addr);
+        const storedRole = localStorage.getItem(key.role(addr)) as Role | null;
+        const storedEmail = localStorage.getItem(key.email(addr));
         if (storedRole) setRoleState(storedRole);
-        if (storedName) setDisplayName(storedName);
+        if (storedEmail) setEmail(storedEmail);
       }
     } catch (error) {
       console.error('Wallet connection failed:', error);
@@ -158,38 +144,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signTransaction = async (txns: any[]) => {
     if (!address) throw new Error('Wallet not connected');
-    const signerTransactions = txns.map(txn => ({
-      txn,
-      signers: [address]
-    }));
-    return await peraWallet.signTransaction([signerTransactions]);
-  };
-
-  const setRole = async (newRole: Role) => {
-    if (user && newRole) {
-      await setDoc(doc(db, 'users', user.uid), { role: newRole }, { merge: true });
-    }
-    if (address && newRole) localStorage.setItem(WALLET_ROLE_KEY(address), newRole);
-    setRoleState(newRole);
+    const signerTxns = txns.map(txn => ({ txn, signers: [address] }));
+    return await peraWallet.signTransaction([signerTxns]);
   };
 
   const logout = async () => {
-    await signOut(auth);
+    try { await signOut(auth); } catch (e) { /* ignore */ }
     try { await peraWallet.disconnect(); } catch (e) { /* ignore */ }
     if (address) {
-      localStorage.removeItem(WALLET_ROLE_KEY(address));
-      localStorage.removeItem(WALLET_NAME_KEY(address));
+      localStorage.removeItem(key.role(address));
+      localStorage.removeItem(key.email(address));
     }
     setAddress(null);
     setRoleState(null);
-    setDisplayName(null);
+    setEmail(null);
   };
 
   return (
     <AuthContext.Provider value={{
-      user, role, displayName, setRole, address,
-      connectWallet, connectWalletAndLogin, disconnectWallet,
-      signTransaction, login, signup, logout, loading
+      user, role, email, displayName, address,
+      signupWithWallet, loginWithWallet,
+      connectWallet, disconnectWallet,
+      signTransaction, logout, loading
     }}>
       {children}
     </AuthContext.Provider>
@@ -198,8 +174,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 };
