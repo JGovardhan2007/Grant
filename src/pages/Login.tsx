@@ -25,6 +25,8 @@ export default function Login() {
   const [walletLoading, setWalletLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showWalletRolePicker, setShowWalletRolePicker] = useState(false);
+  const [walletUsername, setWalletUsername] = useState('');
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,11 +48,15 @@ export default function Login() {
   };
 
   const handleWalletLogin = async (selectedRole: 'Sponsor' | 'Student') => {
+    if (!walletUsername.trim()) {
+      setError('Please enter your name before connecting your wallet.');
+      return;
+    }
     setWalletLoading(true);
     setError(null);
     setShowWalletRolePicker(false);
     try {
-      await connectWalletAndLogin(selectedRole);
+      await connectWalletAndLogin(selectedRole, walletUsername.trim());
       navigate('/dashboard');
     } catch (err: any) {
       console.error(err);
@@ -107,7 +113,15 @@ export default function Login() {
                 animate={{ opacity: 1, y: 0 }}
                 className="p-5 bg-blue-50 rounded-2xl border border-blue-100 space-y-3"
               >
-                <p className="text-xs font-black text-blue-700 uppercase tracking-widest text-center">Select your role</p>
+                <p className="text-xs font-black text-blue-700 uppercase tracking-widest text-center">Your Name &amp; Role</p>
+                {/* Username field */}
+                <input
+                  type="text"
+                  placeholder="Enter your name (e.g. Govardhan)"
+                  value={walletUsername}
+                  onChange={(e) => setWalletUsername(e.target.value)}
+                  className="w-full px-4 py-3 bg-white rounded-xl border border-blue-200 text-sm font-bold text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder:text-gray-400"
+                />
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => handleWalletLogin('Student')}

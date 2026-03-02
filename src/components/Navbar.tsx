@@ -10,11 +10,11 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export default function Navbar() {
-  const { user, role, logout, connectWallet, disconnectWallet, address } = useAuth();
+  const { user, role, logout, connectWallet, disconnectWallet, address, displayName } = useAuth();
   const location = useLocation();
 
   const shortenedAddress = address ? `${address.substring(0, 4)}...${address.substring(address.length - 4)}` : '';
-  const userDisplayName = user?.email?.split('@')[0] || (address ? shortenedAddress : 'User');
+  const userDisplayName = displayName || user?.email?.split('@')[0] || 'User';
 
   if (location.pathname === '/') return null;
 
