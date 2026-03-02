@@ -12,7 +12,8 @@ interface GrantCardProps {
   grant: {
     id: string;
     title: string;
-    sponsor: string;
+    sponsor?: string;
+    sponsorEmail?: string;
     totalAmount: number;
     status: string;
     milestones: any[];
@@ -28,7 +29,7 @@ const GrantCard: React.FC<GrantCardProps> = ({ grant }) => {
       <div className="flex justify-between items-start mb-4">
         <div>
           <h3 className="text-lg font-bold text-blue-900 group-hover:text-blue-700 transition-colors">{grant.title}</h3>
-          <p className="text-sm text-gray-500">Sponsor: {grant.sponsor}</p>
+          <p className="text-sm text-gray-500">Sponsor: {grant.sponsorEmail?.split('@')[0] || grant.sponsor || '—'}</p>
         </div>
         <div className={cn(
           "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider",
@@ -44,8 +45,8 @@ const GrantCard: React.FC<GrantCardProps> = ({ grant }) => {
           <span className="font-bold text-blue-900">{Math.round(progress)}%</span>
         </div>
         <div className="w-full h-2 bg-blue-50 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-blue-900 transition-all duration-500" 
+          <div
+            className="h-full bg-blue-900 transition-all duration-500"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
@@ -56,7 +57,7 @@ const GrantCard: React.FC<GrantCardProps> = ({ grant }) => {
           <p className="text-xs text-gray-500 uppercase font-semibold">Total Amount</p>
           <p className="text-xl font-bold text-blue-900">₹{grant.totalAmount.toLocaleString()}</p>
         </div>
-        <Link 
+        <Link
           to={`/grants/${grant.id}`}
           className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-900 rounded-xl text-sm font-bold hover:bg-blue-900 hover:text-white transition-all"
         >
