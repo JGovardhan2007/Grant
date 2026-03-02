@@ -10,4 +10,13 @@ export default defineConfig({
     tailwindcss(),
     nodePolyfills(),
   ],
+  server: {
+    proxy: {
+      '/algonode-testnet': {
+        target: 'https://testnet-api.algonode.cloud',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/algonode-testnet/, ''),
+      },
+    },
+  },
 })

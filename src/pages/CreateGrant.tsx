@@ -8,7 +8,8 @@ import { db } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
 import { algodClient, CHAIN_GRANT_APP_ID, CHAIN_GRANT_APP_ADDR } from '../lib/algorand';
 import algosdk from 'algosdk';
-import { createGrantContract } from '../lib/algorand';
+import { createGrantContract, handleNetworkError, concatUint8Arrays } from '../lib/algorand';
+import { diagnoseNetworkIssues } from '../utils/connectivity';
 export default function CreateGrant() {
   const navigate = useNavigate();
   const { address, signTransaction, user, email } = useAuth();
@@ -197,7 +198,9 @@ export default function CreateGrant() {
       const signedInit = await signTransaction([paymentTxn, appCallTxn]);
 
       console.log('Sending initialization group...');
-      const { txid: fundingTxId } = await algodClient.sendRawTransaction(signedInit).do();
+      // Concatenate the signed transactions into a single Uint8Array for the group submission
+      const combinedSignedTxns = concatUint8Arrays(signedInit);
+      const { txid: fundingTxId } = await algodClient.sendRawTransaction(combinedSignedTxns).do();
       await algosdk.waitForConfirmation(algodClient, fundingTxId, 4);
       console.log(`Funding confirmed: ${fundingTxId}`);
 
@@ -229,9 +232,16 @@ export default function CreateGrant() {
 
       alert('Success! Grant created and funds locked on Algorand.');
       navigate('/dashboard');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Grant creation failed:', error);
-      alert('Creation failed. Make sure you signed both transactions and try again.');
+
+      const diagnosis = await diagnoseNetworkIssues();
+      if (diagnosis.status === 'blocked') {
+        alert(`❌ Connection Failure!\n\n${diagnosis.message}`);
+      } else {
+        const userFriendlyError = handleNetworkError(error);
+        alert(`Creation failed: ${userFriendlyError}`);
+      }
     } finally {
       setLoading(false);
     }

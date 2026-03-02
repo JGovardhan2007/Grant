@@ -2,10 +2,38 @@ import algosdk from 'algosdk';
 
 // Testnet configuration
 const algodToken = '';
-const algodServer = 'https://testnet-api.algonode.cloud';
-const algodPort = 443;
+const algodServer = window.location.origin + '/algonode-testnet';
 
-export const algodClient = new algosdk.Algodv2(algodToken, algodServer, algodPort);
+export const algodClient = new algosdk.Algodv2(algodToken, algodServer, undefined);
+
+/**
+ * Enhanced error handler for Algorand network requests.
+ */
+export const handleNetworkError = (error: any): string => {
+  if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+    return 'Network Connection Error: Unable to reach the Algorand node. Please check if your VPN or Firewall is blocking https://testnet-api.algonode.cloud';
+  }
+  if (error?.message?.includes('ERR_CONNECTION_RESET')) {
+    return 'Connection Reset: The connection to the Algorand network was interrupted. This often happens due to network instability or security software.';
+  }
+  return error?.message || 'An unknown error occurred during the blockchain operation.';
+};
+
+/**
+ * Helper to concatenate multiple Uint8Arrays into one.
+ * Useful for combining signed transactions for group submission.
+ */
+export const concatUint8Arrays = (arrays: Uint8Array[]) => {
+  const totalLength = arrays.reduce((acc, curr) => acc + curr.length, 0);
+  const result = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const arr of arrays) {
+    result.set(arr, offset);
+    offset += arr.length;
+  }
+  return result;
+};
+
 
 /**
  * Sends a payment transaction on Algorand Testnet.
@@ -82,30 +110,30 @@ export const createGrantContract = async (
   amountAlgo: number,
   note?: string
 ) => {
-  const params = await algodClient.getTransactionParams().do();
-  const microAlgo = algosdk.algosToMicroalgos(amountAlgo);
+  try {
+    const params = await algodClient.getTransactionParams().do();
+    const microAlgo = algosdk.algosToMicroalgos(amountAlgo);
 
-  // 1. Deploy the Contract (Bare Create)
-  const deployTxn = algosdk.makeApplicationCreateTxnFromObject({
-    sender: sponsorAddress,
-    suggestedParams: params,
-    onComplete: algosdk.OnApplicationComplete.NoOpOC,
-    approvalProgram: getProgramBytes(APPROVAL_PROGRAM_B64),
-    clearProgram: getProgramBytes(CLEAR_PROGRAM_B64),
-    // Extracted exactly from ARC-56 JSON / contract.py GlobalState counts
-    numGlobalByteSlices: 3, // sponsor (account), student (account), latest_proof_hash (String)
-    numGlobalInts: 3,       // total_locked, released, initialized
-    appArgs: [],
-    note: note ? new TextEncoder().encode(note) : undefined,
-  });
+    // 1. Deploy the Contract (Bare Create)
+    const deployTxn = algosdk.makeApplicationCreateTxnFromObject({
+      sender: sponsorAddress,
+      suggestedParams: params,
+      onComplete: algosdk.OnApplicationComplete.NoOpOC,
+      approvalProgram: getProgramBytes(APPROVAL_PROGRAM_B64),
+      clearProgram: getProgramBytes(CLEAR_PROGRAM_B64),
+      numGlobalByteSlices: 3,
+      numGlobalInts: 3,
+      appArgs: [],
+      note: note ? new TextEncoder().encode(note) : undefined,
+    });
 
-  // NOTE: A more robust way since we don't know exact app ID at group formation:
-  // We can't actually do a 3-txn group if the 2nd txn needs the Receiver address of the app created in txn 1.
-  // We have to deploy FIRST as a single atomic transaction, wait for the network to assign an App ID to it, 
-  // THEN do the initialize_grant funding group.
-
-  return [deployTxn]; // UI MUST handle this two-step process now.
+    return [deployTxn];
+  } catch (error) {
+    console.error('Failed to prepare deployment transaction:', error);
+    throw new Error(handleNetworkError(error));
+  }
 };
+
 
 /**
  * Build the application-call transaction to release funds for one milestone.
