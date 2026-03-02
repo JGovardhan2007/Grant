@@ -10,14 +10,18 @@ import {
   ShieldCheck,
   FileText,
   Loader2,
-  Trash2
+  AlertCircle,
+  FileCheck,
+  Trash2,
+  Cpu,
+  Database
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion'; // Corrected from motion/react
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
-import { algodClient, CHAIN_GRANT_APP_ID } from '../lib/algorand';
+import { algodClient, CHAIN_GRANT_APP_ID, releaseMilestoneFunds, formatAddress, CHAIN_GRANT_APP_ADDR } from '../lib/algorand';
 import { generateHash } from '../lib/hashing';
 import algosdk from 'algosdk';
 
@@ -149,19 +153,24 @@ export default function MilestoneTracker() {
       }
 
       // Convert INR to microALGO (1 INR = 1000 microALGO for testnet demo)
+      // Use dynamic app ID created during grant deployment, fallback to legacy singleton for old buggy grants
+      const targetAppId = grant.appId || CHAIN_GRANT_APP_ID;
+      const targetAppAddress = grant.appAddress || CHAIN_GRANT_APP_ADDR;
+
+      console.log(`Sending milestone data to App ID: ${targetAppId}`);
+
       const microAlgo = BigInt(Math.round(milestone.amount * 1000));
-
-
       const methodSelector = algosdk.ABIMethod.fromSignature('release_funds(uint64,string)void').getSelector();
-      const amountArg = algosdk.ABIUintType.from('uint64').encode(microAlgo);
-      const proofArg = algosdk.ABIStringType.from('string').encode(milestone.proofHash || 'No Proof Hash');
+      const encodedAmount = algosdk.encodeUint64(microAlgo);
+      const proofHash = milestone.proofHash || 'No Proof Hash';
+      const encodedProof = new TextEncoder().encode(proofHash); // string parameter
 
       const txn = algosdk.makeApplicationCallTxnFromObject({
-        sender: address,
+        sender: address as string,
         suggestedParams: { ...params, fee: 2000, flatFee: true },
-        appIndex: CHAIN_GRANT_APP_ID,
+        appIndex: targetAppId,
         onComplete: algosdk.OnApplicationComplete.NoOpOC,
-        appArgs: [methodSelector, amountArg, proofArg],
+        appArgs: [methodSelector, encodedAmount, encodedProof],
         accounts: [grant.studentAddress],
         note: new TextEncoder().encode(`ChainGrant Release: ${milestone.name}`),
       });
@@ -195,20 +204,21 @@ export default function MilestoneTracker() {
   };
 
   const handleCloseGrant = async () => {
-    if (!address) {
-      alert('Please connect your Algorand wallet first!');
-      return;
-    }
+    if (!address || !grant) return;
 
-    setReleasing('closing');
+    // Note: Since each is now dynamically deployed, the Force Reset UI on CreateGrant handles stuck legacy state.
+    // This button here is just standard close.
+    const targetAppId = grant.appId || CHAIN_GRANT_APP_ID;
+
+    setReleasing('closing'); // Using releasing state for closing as well
     try {
       const params = await algodClient.getTransactionParams().do();
       const methodSelector = algosdk.ABIMethod.fromSignature('close_grant()void').getSelector();
 
       const txn = algosdk.makeApplicationCallTxnFromObject({
-        sender: address,
+        sender: address as string,
         suggestedParams: { ...params, fee: 2000, flatFee: true },
-        appIndex: CHAIN_GRANT_APP_ID,
+        appIndex: targetAppId,
         onComplete: algosdk.OnApplicationComplete.NoOpOC,
         appArgs: [methodSelector],
       });
@@ -442,6 +452,20 @@ export default function MilestoneTracker() {
           <div className="bg-white p-10 rounded-[3rem] border border-blue-50 shadow-2xl shadow-blue-100/20 sticky top-24">
             <h2 className="text-2xl font-black text-blue-900 mb-8 tracking-tight">Financial Summary</h2>
             <div className="space-y-6">
+              <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex flex-col gap-1">
+                <span className="text-[10px] items-center gap-1 font-black text-gray-400 uppercase tracking-widest flex">
+                  <Cpu size={12} /> Escrow App ID
+                </span>
+                <span className="font-mono text-sm text-gray-700 font-bold">{grant.appId || CHAIN_GRANT_APP_ID}</span>
+              </div>
+              <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex flex-col gap-1">
+                <span className="text-[10px] items-center gap-1 font-black text-gray-400 uppercase tracking-widest flex">
+                  <Database size={12} /> Vault Address
+                </span>
+                <span className="font-mono text-xs text-gray-700 font-bold break-all">
+                  {grant.appAddress || CHAIN_GRANT_APP_ADDR}
+                </span>
+              </div>
               <div className="flex justify-between items-center group">
                 <span className="text-gray-400 font-black text-[10px] uppercase tracking-widest">Total Committed</span>
                 <span className="font-black text-xl text-blue-900">₹{grant.totalAmount.toLocaleString()}</span>

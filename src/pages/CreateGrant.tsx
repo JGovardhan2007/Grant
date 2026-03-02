@@ -8,7 +8,7 @@ import { db } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
 import { algodClient, CHAIN_GRANT_APP_ID, CHAIN_GRANT_APP_ADDR } from '../lib/algorand';
 import algosdk from 'algosdk';
-
+import { createGrantContract } from '../lib/algorand';
 export default function CreateGrant() {
   const navigate = useNavigate();
   const { address, signTransaction, user, email } = useAuth();
@@ -125,14 +125,14 @@ export default function CreateGrant() {
       const params = await algodClient.getTransactionParams().do();
 
       // Convert INR to microALGO (1 INR = 1000 microALGO for testnet demo)
-      const MIN_BALANCE_REQ = 300_000n;
+      const MIN_BALANCE_REQ = 400_000n; // Slightly higher buffer for full deployment
       const grantAmount = BigInt(Math.round(Number(totalAmount) * 1000));
       const microAlgo = grantAmount + MIN_BALANCE_REQ;
 
       // ── PRE-FLIGHT CHECK 1: Wallet balance ─────────────────────────────────
       const accountInfo = await algodClient.accountInformation(address as string).do();
       const walletBalance = BigInt(accountInfo.amount);
-      const txFees = 2000n; // two transactions
+      const txFees = 3000n; // three transactions total
       const needed = microAlgo + txFees;
       if (walletBalance < needed) {
         const shortfall = ((needed - walletBalance) / 1_000_000n * 10n + 9n) / 10n; // ceil to 0.1 ALGO
@@ -147,21 +147,31 @@ export default function CreateGrant() {
         return;
       }
 
-      // ── PRE-FLIGHT CHECK 2: Contract not already initialized ─────────────
-      try {
-        const appInfo = await algodClient.getApplicationByID(CHAIN_GRANT_APP_ID).do();
-        const globalState = appInfo.params.globalState || [];
-        const initializedVar = globalState.find((kv: any) => kv.key === 'aW5pdGlhbGl6ZWQ='); // base64 for 'initialized'
-        if (initializedVar && initializedVar.value && Number(initializedVar.value.uint) === 1) {
-          setLoading(false);
-          setNeedsReset(true);
-          return;
-        }
-      } catch (e) {
-        // If we can't read app state, proceed anyway (non-blocking)
-        console.warn('Could not read contract state — proceeding', e);
-      }
+      // NO PRE-FLIGHT CHECK 2 NEEDED ANYMORE - WE ALWAYS CREATE A FRESH CONTRACT!
 
+      // ═══════════════════════════════════════════════════════════════════
+      //  STEP 1: DEPLOY FRESH SMART CONTRACT
+      // ═══════════════════════════════════════════════════════════════════
+      console.log('Deploying new smart contract instance...');
+      const [deployTxn] = await createGrantContract(address as string, studentAddress, Number(totalAmount));
+
+      const signedDeploy = await signTransaction([deployTxn]);
+      const { txid: deployTxId } = await algodClient.sendRawTransaction(signedDeploy).do();
+
+      console.log(`Waiting for deployment tx: ${deployTxId}...`);
+      const deployResult = await algosdk.waitForConfirmation(algodClient, deployTxId, 4);
+      // Depending on the algosdk version, this property name varies. Safe casting:
+      const newAppId = Number((deployResult as any)['application-index'] || (deployResult as any).applicationIndex);
+      const newAppAddress = algosdk.getApplicationAddress(newAppId);
+      console.log(`Successfully deployed App ID: ${newAppId} at Address: ${newAppAddress}`);
+
+      // ═══════════════════════════════════════════════════════════════════
+      //  STEP 2: INITIALIZE AND FUND THE NEW ESCROW
+      // ═══════════════════════════════════════════════════════════════════
+      console.log('Initializing and locking funds into the new contract...');
+
+      // Copy params so we don't mutate the original if SDK complains about Type mismatch
+      const initParams = { ...params, fee: 2000, flatFee: true };
 
       const methodSelector = algosdk.ABIMethod.fromSignature('initialize_grant(address,pay)void').getSelector();
       const encodedStudentAddr = algosdk.ABIAddressType.from('address').encode(studentAddress);
@@ -169,25 +179,31 @@ export default function CreateGrant() {
       // Payment FIRST (index 0) — ABI reads 'pay' arg at group_index - 1
       const paymentTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
         sender: address as string,
-        receiver: CHAIN_GRANT_APP_ADDR,
+        receiver: newAppAddress,
         amount: microAlgo,
-        suggestedParams: params,
+        suggestedParams: initParams,
       });
 
       // App call SECOND (index 1)
       const appCallTxn = algosdk.makeApplicationCallTxnFromObject({
         sender: address as string,
-        suggestedParams: params,
-        appIndex: CHAIN_GRANT_APP_ID,
+        suggestedParams: initParams,
+        appIndex: newAppId,
         onComplete: algosdk.OnApplicationComplete.NoOpOC,
         appArgs: [methodSelector, encodedStudentAddr],
       });
 
       algosdk.assignGroupID([paymentTxn, appCallTxn]);
-      const signedTxns = await signTransaction([paymentTxn, appCallTxn]);
-      const sendResult = await algodClient.sendRawTransaction(signedTxns).do();
-      const fundingTxId = sendResult.txid;
+      const signedInit = await signTransaction([paymentTxn, appCallTxn]);
 
+      console.log('Sending initialization group...');
+      const { txid: fundingTxId } = await algodClient.sendRawTransaction(signedInit).do();
+      await algosdk.waitForConfirmation(algodClient, fundingTxId, 4);
+      console.log(`Funding confirmed: ${fundingTxId}`);
+
+      // ═══════════════════════════════════════════════════════════════════
+      //  STEP 3: SAVE TO FIREBASE
+      // ═══════════════════════════════════════════════════════════════════
       await addDoc(collection(db, 'grants'), {
         title,
         description,
@@ -197,6 +213,8 @@ export default function CreateGrant() {
         sponsorEmail: email || 'sponsor@example.com',
         sponsorAddress: address,
         fundingTxId,
+        appId: newAppId,           // CRITICAL: save the newly created active app id!
+        appAddress: newAppAddress, // CRITICAL: save its escrow address!
         status: 'Active',
         createdAt: new Date().toISOString(),
         milestones: milestones.map((m, i) => ({
