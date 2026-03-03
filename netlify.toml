@@ -1,0 +1,12 @@
+# Netlify Configuration File
+
+[[redirects]]
+  from = "/algonode-testnet/*"
+  to = "https://testnet-api.algonode.cloud/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
