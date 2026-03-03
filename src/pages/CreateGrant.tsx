@@ -157,10 +157,11 @@ export default function CreateGrant() {
       const [deployTxn] = await createGrantContract(address as string, studentAddress, Number(totalAmount));
 
       const signedDeploy = await signTransaction([deployTxn]);
-      const { txid: deployTxId } = await algodClient.sendRawTransaction(signedDeploy).do();
+      const combinedDeploy = concatUint8Arrays(signedDeploy);
+      const { txid: deployTxId } = await algodClient.sendRawTransaction(combinedDeploy).do();
 
       console.log(`Waiting for deployment tx: ${deployTxId}...`);
-      const deployResult = await algosdk.waitForConfirmation(algodClient, deployTxId, 4);
+      const deployResult = await algosdk.waitForConfirmation(algodClient, deployTxId, 10);
       // Depending on the algosdk version, this property name varies. Safe casting:
       const newAppId = Number((deployResult as any)['application-index'] || (deployResult as any).applicationIndex);
       const newAppAddress = algosdk.getApplicationAddress(newAppId).toString();
