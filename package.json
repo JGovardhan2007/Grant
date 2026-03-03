@@ -10,7 +10,6 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "@algorandfoundation/algokit-utils": "^7.0.0",
         "@perawallet/connect": "^1.1.0",
         "@tailwindcss/vite": "^4.0.0",
         "@types/crypto-js": "^4.2.2",
