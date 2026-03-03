@@ -21,7 +21,7 @@ import { motion } from 'framer-motion'; // Corrected from motion/react
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
-import { algodClient, CHAIN_GRANT_APP_ID, releaseMilestoneFunds, formatAddress, CHAIN_GRANT_APP_ADDR } from '../lib/algorand';
+import { algodClient, CHAIN_GRANT_APP_ID, releaseMilestoneFunds, requestMilestoneChanges, formatAddress, CHAIN_GRANT_APP_ADDR, concatUint8Arrays } from '../lib/algorand';
 import { generateHash } from '../lib/hashing';
 import algosdk from 'algosdk';
 
@@ -93,14 +93,23 @@ export default function MilestoneTracker() {
   };
 
   const handleRequestChanges = async () => {
-    if (!grant || !rejectMilestoneId || !rejectReason.trim()) {
-      alert('Please provide a reason for requesting changes.');
+    if (!address || !grant || !rejectMilestoneId || !rejectReason.trim()) {
+      alert('Please provide a reason for requesting changes and connect your wallet.');
       return;
     }
 
     setShowRejectModal(false);
 
     try {
+      const targetAppId = grant.appId || CHAIN_GRANT_APP_ID;
+      const milestone = grant.milestones.find((m: any) => m.id === rejectMilestoneId);
+
+      const txn = await requestMilestoneChanges(address as string, targetAppId, milestone?.name || 'Milestone');
+      const signed = await signTransaction([txn]);
+      const combined = concatUint8Arrays(signed);
+      await algodClient.sendRawTransaction(combined).do();
+
+      // Update Firestore after on-chain record is sent
       const updatedMilestones = grant.milestones.map((m: any) =>
         m.id === rejectMilestoneId
           ? {
@@ -115,7 +124,7 @@ export default function MilestoneTracker() {
         milestones: updatedMilestones
       });
 
-      alert('Feedback sent to student.');
+      alert('Feedback sent to student and recorded on-chain.');
       setRejectReason('');
       setRejectMilestoneId(null);
     } catch (err: any) {
@@ -153,31 +162,24 @@ export default function MilestoneTracker() {
       }
 
       // Convert INR to microALGO (1 INR = 1000 microALGO for testnet demo)
-      // Use dynamic app ID created during grant deployment, fallback to legacy singleton for old buggy grants
       const targetAppId = grant.appId || CHAIN_GRANT_APP_ID;
-      const targetAppAddress = grant.appAddress || CHAIN_GRANT_APP_ADDR;
+      const proofHash = milestone.proofHash || 'No Proof Hash';
 
       console.log(`Sending milestone data to App ID: ${targetAppId}`);
 
-      const microAlgo = BigInt(Math.round(milestone.amount * 1000));
-      const methodSelector = algosdk.ABIMethod.fromSignature('release_funds(uint64,string)void').getSelector();
-      const encodedAmount = algosdk.encodeUint64(microAlgo);
-      const proofHash = milestone.proofHash || 'No Proof Hash';
-      const encodedProof = new TextEncoder().encode(proofHash); // string parameter
-
-      const txn = algosdk.makeApplicationCallTxnFromObject({
-        sender: address as string,
-        suggestedParams: { ...params, fee: 2000, flatFee: true },
-        appIndex: targetAppId,
-        onComplete: algosdk.OnApplicationComplete.NoOpOC,
-        appArgs: [methodSelector, encodedAmount, encodedProof],
-        accounts: [grant.studentAddress],
-        note: new TextEncoder().encode(`ChainGrant Release: ${milestone.name}`),
-      });
+      const txn = await releaseMilestoneFunds(
+        address as string,
+        targetAppId,
+        grant.studentAddress,
+        milestone.amount,
+        proofHash
+      );
 
       const signedTxns = await signTransaction([txn]);
-      const sendResult = await algodClient.sendRawTransaction(signedTxns).do();
+      const combined = concatUint8Arrays(signedTxns);
+      const sendResult = await algodClient.sendRawTransaction(combined).do();
       const releaseTxId = sendResult.txid;
+      await algosdk.waitForConfirmation(algodClient, releaseTxId, 4);
 
       // 2. Update Firestore
       const updatedMilestones = grant.milestones.map((m: any) =>

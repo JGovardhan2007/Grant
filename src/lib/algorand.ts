@@ -142,23 +142,54 @@ export const createGrantContract = async (
 export const releaseMilestoneFunds = async (
   sponsorAddress: string,
   appId: number,
-  amountAlgo: number,
+  studentAddress: string,
+  amountInr: number,
+  proofHash: string
 ) => {
   const params = await algodClient.getTransactionParams().do();
-  const microAlgo = algosdk.algosToMicroalgos(amountAlgo);
+  // 1 INR = 1000 microALGO for testnet demo balance
+  const microAlgo = BigInt(Math.round(amountInr * 1000));
 
-  // ABI encode the amount
-  const amountEncoded = algosdk.encodeUint64(microAlgo);
+  const method = algosdk.ABIMethod.fromSignature('release_funds(uint64,string)void');
+
+  // ARC-4 ABI: Arguments must be packed into a single tuple and passed as appArgs[1]
+  const argTypes = method.args.map(a => a.type as algosdk.ABIType);
+  const tupleType = new algosdk.ABITupleType(argTypes);
+  const packedArgs = tupleType.encode([microAlgo, proofHash]);
 
   const txn = algosdk.makeApplicationCallTxnFromObject({
     sender: sponsorAddress,
-    suggestedParams: params,
+    suggestedParams: { ...params, fee: 2000, flatFee: true }, // Cover inner payment
     appIndex: appId,
     onComplete: algosdk.OnApplicationComplete.NoOpOC,
-    appArgs: [
-      new TextEncoder().encode('release_funds'),
-      amountEncoded,
-    ],
+    appArgs: [method.getSelector(), packedArgs],
+    accounts: [studentAddress], // Must include recipient for inner txn
+  });
+
+  return txn;
+};
+
+/**
+ * Build the application-call transaction to record a change request on-chain.
+ */
+export const requestMilestoneChanges = async (
+  sponsorAddress: string,
+  appId: number,
+  milestoneName: string
+) => {
+  const params = await algodClient.getTransactionParams().do();
+  const method = algosdk.ABIMethod.fromSignature('request_changes(string)void');
+
+  const argTypes = method.args.map(a => a.type as algosdk.ABIType);
+  const tupleType = new algosdk.ABITupleType(argTypes);
+  const packedArgs = tupleType.encode([milestoneName]);
+
+  const txn = algosdk.makeApplicationCallTxnFromObject({
+    sender: sponsorAddress,
+    suggestedParams: { ...params, fee: 1000, flatFee: true },
+    appIndex: appId,
+    onComplete: algosdk.OnApplicationComplete.NoOpOC,
+    appArgs: [method.getSelector(), packedArgs],
   });
 
   return txn;
