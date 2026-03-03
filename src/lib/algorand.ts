@@ -152,17 +152,16 @@ export const releaseMilestoneFunds = async (
 
   const method = algosdk.ABIMethod.fromSignature('release_funds(uint64,string)void');
 
-  // ARC-4 ABI: Arguments must be packed into a single tuple and passed as appArgs[1]
-  const argTypes = method.args.map(a => a.type as algosdk.ABIType);
-  const tupleType = new algosdk.ABITupleType(argTypes);
-  const packedArgs = tupleType.encode([microAlgo, proofHash]);
+  // ARC-4 ABI: Standard methods expect each argument in its own application_args slot.
+  const uint64Encoded = new algosdk.ABIUintType(64).encode(microAlgo);
+  const stringEncoded = new algosdk.ABIStringType().encode(proofHash);
 
   const txn = algosdk.makeApplicationCallTxnFromObject({
     sender: sponsorAddress,
     suggestedParams: { ...params, fee: 2000, flatFee: true }, // Cover inner payment
     appIndex: appId,
     onComplete: algosdk.OnApplicationComplete.NoOpOC,
-    appArgs: [method.getSelector(), packedArgs],
+    appArgs: [method.getSelector(), uint64Encoded, stringEncoded],
     accounts: [studentAddress], // Must include recipient for inner txn
   });
 
@@ -180,16 +179,14 @@ export const requestMilestoneChanges = async (
   const params = await algodClient.getTransactionParams().do();
   const method = algosdk.ABIMethod.fromSignature('request_changes(string)void');
 
-  const argTypes = method.args.map(a => a.type as algosdk.ABIType);
-  const tupleType = new algosdk.ABITupleType(argTypes);
-  const packedArgs = tupleType.encode([milestoneName]);
+  const stringEncoded = new algosdk.ABIStringType().encode(milestoneName);
 
   const txn = algosdk.makeApplicationCallTxnFromObject({
     sender: sponsorAddress,
     suggestedParams: { ...params, fee: 1000, flatFee: true },
     appIndex: appId,
     onComplete: algosdk.OnApplicationComplete.NoOpOC,
-    appArgs: [method.getSelector(), packedArgs],
+    appArgs: [method.getSelector(), stringEncoded],
   });
 
   return txn;
